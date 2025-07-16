@@ -23,7 +23,6 @@ print(f"Train: {train_acc:.2%}, Test: {test_acc:.2%}")
 
 """
 
-
 class LinearProbeEvaluator:
     """
     Train and evaluate a linear classifier on frozen SSL features.
