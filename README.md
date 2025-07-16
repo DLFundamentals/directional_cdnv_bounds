@@ -1,1 +1,1 @@
-# directional_cdnv_bounds
+# Extension of Proposition 1
