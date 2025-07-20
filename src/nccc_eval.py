@@ -20,11 +20,10 @@ def set_seed(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False  # Ensures determinism
 
-set_seed(42)
-
 def main(args):
+    set_seed(args.seed)
     # set device
-    device='cuda' if torch.cuda.is_available() else 'cpu',
+    device='cuda' if torch.cuda.is_available() else 'cpu'
     # load configuration
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
@@ -40,11 +39,9 @@ def main(args):
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
 
-    breakpoint()
-
     # build encoder
     encoder_type = config['model']['encoder_type']
-    if encoder_type == 'resnet':
+    if encoder_type == 'resnet50':
         kwargs = {
             'width_multiplier': config['model'].get('width_multiplier', 1),
             'hidden_dim': config['model'].get('hidden_dim', 2048),
@@ -68,21 +65,22 @@ def main(args):
 
     # extract features
     ssl_extractor = FeatureExtractor(ssl_model)
-    train_features, train_labels = ssl_extractor.extract_features(train_loader, test=True) # test=True to get image with basic transforms
-    test_features, test_labels = ssl_extractor.extract_features(test_loader, test=True)
+    train_features, train_labels = ssl_extractor.extract_features(train_loader)
+    test_features, test_labels = ssl_extractor.extract_features(test_loader)
 
     # initialize evaluator
     # TODO: make n_shot, repeat, selected_classes configurable
+    embedding_layer = 0 # 0 for h, 1 for g(h)
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
-        train_features, train_labels,
+        train_features[embedding_layer], train_labels,
         n_shot=100,
         repeat=1,
         selected_classes=None
     )
     # make sure to use above selected classes while evaluating
     accs = evaluator.evaluate(
-        test_features, test_labels, centers, selected_classes
+        test_features[embedding_layer], test_labels, centers, selected_classes
     )
     print(f"Evaluation accuracies: {accs}")
 
@@ -91,6 +89,10 @@ if __name__ == "__main__":
     parser.add_argument('--config', type=str, required=True, help='Path to the configuration file')
     parser.add_argument('--ckpt_path', type=str, required=True, help='Path to the SSL model checkpoint')
     parser.add_argument('--output_path', type=str, default='logs/nccc', help='Path to save evaluation results')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
+    parser.add_argument('--repeat', type=int, default=1, help='Number of repeats for evaluation')
+    parser.add_argument('--n_shot', type=int, default=100, help='Number of shots for few-shot evaluation')
     args = parser.parse_args()
 
+    os.makedirs(args.output_path, exist_ok=True)
     main(args)

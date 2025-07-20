@@ -43,7 +43,7 @@ class NCCCEvaluator:
         features = features.to(self.device)
         labels = labels.to(self.device)
         assert features.shape[0] == labels.shape[0], "Features and labels must have the same number of samples."
-
+        
         if selected_classes is None:
             selected_classes = sorted(list(set(labels.cpu().numpy().tolist())))
         n_classes = len(selected_classes)

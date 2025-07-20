@@ -41,7 +41,7 @@ def get_ssl_model(method: str, encoder, dataset: str, **kwargs):
     raise NotImplementedError(f"SSL method '{method}' not supported.")
 
 
-def load_latest_checkpoint(ssl_model, checkpoint_dir: str, device):
+def load_latest_checkpoint(ssl_model, checkpoint_dir: str, device: str):
     checkpoint_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.pth')]
     if not checkpoint_files:
         raise FileNotFoundError(f"No checkpoints found in {checkpoint_dir}")
@@ -50,10 +50,10 @@ def load_latest_checkpoint(ssl_model, checkpoint_dir: str, device):
     best_checkpoint = sorted_checkpoints[-1]
     snapshot_path = os.path.join(checkpoint_dir, best_checkpoint)
     print(f"Loading checkpoint: {snapshot_path}")
-    return load_snapshot(snapshot_path, ssl_model, device)
+    return load_snapshot(ssl_model, snapshot_path, device)
 
 
-def load_snapshot(ssl_model, snapshot_path: str, device):
+def load_snapshot(ssl_model, snapshot_path: str, device: str):
     snapshot = torch.load(snapshot_path, map_location=device, weights_only=True)
     state_dict = snapshot['MODEL_STATE']
     epochs_trained = snapshot['EPOCHS_RUN']
