@@ -8,12 +8,9 @@ from encoders.simclr import SimCLR  # adjust this import to your layout
 def create_ijepa_encoder(dataset: str):
     """Create I-JEPA encoder using Hugging Face transformers"""
     if dataset in ['imagenet', 'mini_imagenet']:
-        # Use pre-trained I-JEPA model for ImageNet/Mini-ImageNet
         model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
-        # Extract just the encoder part
         return model.encoder
     else:
-        # For other datasets, create a smaller configuration
         config = IJepaConfig(
             hidden_size=384,
             num_hidden_layers=12,
