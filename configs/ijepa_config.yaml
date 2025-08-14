@@ -1,4 +1,4 @@
-experiment_name: "ijepa/imagenet"
+experiment_name: "ijepa/mini_imagenet"
 method_type: "ijepa"
 supervision: "SSL"
 
@@ -37,7 +37,7 @@ loss:
 
 evaluation:
   K: [5, 10, 20]
-  checkpoints_dir: "experiments/ijepa/miniimagenet/checkpoints/"  
+  checkpoints_dir: "experiments/ijepa/mini_imagenet/checkpoints/"  
   perform_knn: False
   perform_cdnv: True
   perform_nccc: True

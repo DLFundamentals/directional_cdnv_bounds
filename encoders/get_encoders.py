@@ -1,72 +1,9 @@
 import os
 import torch
 import torchvision.models as models
-from transformers import IJepaModel, IJepaConfig
 from encoders.simclr import SimCLR  # adjust this import to your layout
+from ijepa import create_ijepa_encoder, create_ijepa_ssl_model
 
-
-def create_ijepa_encoder(dataset: str):
-    """Create I-JEPA encoder using Hugging Face transformers"""
-    if dataset in ['imagenet', 'mini_imagenet']:
-        model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
-        return model.encoder
-    else:
-        config = IJepaConfig(
-            hidden_size=384,
-            num_hidden_layers=12,
-            num_attention_heads=6,
-            intermediate_size=1536,
-            image_size=84 if dataset == 'mini_imagenet' else (32 if 'cifar' in dataset.lower() else 224),
-            patch_size=7 if dataset == 'mini_imagenet' else (4 if 'cifar' in dataset.lower() else 16),
-            num_channels=3,
-            qkv_bias=True,
-            hidden_act="gelu",
-            layer_norm_eps=1e-6,
-            attention_probs_dropout_prob=0.0,
-            hidden_dropout_prob=0.0,
-        )
-        model = IJepaModel(config)
-        return model.encoder
-
-
-def create_ijepa_ssl_model(dataset: str, **kwargs):
-    if dataset in ['imagenet', 'mini_imagenet']:
-        if dataset == 'mini_imagenet':
-            config = IJepaConfig(
-                hidden_size=768,
-                num_hidden_layers=12,
-                num_attention_heads=12,
-                intermediate_size=3072,
-                image_size=84, 
-                patch_size=7,   
-                num_channels=3,
-                qkv_bias=True,
-                hidden_act="gelu",
-                layer_norm_eps=1e-6,
-                attention_probs_dropout_prob=0.0,
-                hidden_dropout_prob=0.0,
-            )
-            model = IJepaModel(config)
-        else:
-            model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
-    else:
-        config = IJepaConfig(
-            hidden_size=384,
-            num_hidden_layers=12,
-            num_attention_heads=6,
-            intermediate_size=1536,
-            image_size=32 if 'cifar' in dataset.lower() else 224,
-            patch_size=4 if 'cifar' in dataset.lower() else 16,
-            num_channels=3,
-            qkv_bias=True,
-            hidden_act="gelu",
-            layer_norm_eps=1e-6,
-            attention_probs_dropout_prob=0.0,
-            hidden_dropout_prob=0.0,
-        )
-        model = IJepaModel(config)
-    
-    return model
 
 
 SUPPORTED_ENCODERS = {
