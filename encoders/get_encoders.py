@@ -2,18 +2,21 @@ import os
 import torch
 import torchvision.models as models
 from encoders.simclr import SimCLR  # adjust this import to your layout
+from ijepa import create_ijepa_encoder, create_ijepa_ssl_model
+
 
 
 SUPPORTED_ENCODERS = {
     'resnet50': lambda dataset: models.resnet50(pretrained=False),
     'vit_b': lambda dataset: models.VisionTransformer(
-        patch_size=16 if dataset == 'imagenet' else 4,
-        image_size=224 if dataset == 'imagenet' else 32,
+        patch_size=16 if dataset == 'imagenet' else (7 if dataset == 'mini_imagenet' else 4),
+        image_size=224 if dataset == 'imagenet' else (84 if dataset == 'mini_imagenet' else 32),
         num_layers=12,
         num_heads=12,
-        hidden_dim=768 if dataset == 'imagenet' else 384,
-        mlp_dim=3072 if dataset == 'imagenet' else 1536,
+        hidden_dim=768 if dataset in ['imagenet', 'mini_imagenet'] else 384,
+        mlp_dim=3072 if dataset in ['imagenet', 'mini_imagenet'] else 1536,
     ),
+    'ijepa': lambda dataset: create_ijepa_encoder(dataset=dataset),
 }
 
 
@@ -31,13 +34,15 @@ def get_ssl_model(method: str, encoder, dataset: str, **kwargs):
             width_multiplier=kwargs.get('width_multiplier', 1),
             hidden_dim=kwargs.get('hidden_dim', 2048),
             projection_dim=kwargs.get('projection_dim', 128),
-            image_size=224 if dataset == 'imagenet' else 32,
-            patch_size=16 if dataset == 'imagenet' else 4,
-            stride=16 if dataset == 'imagenet' else 2,
-            token_hidden_dim=768 if dataset == 'imagenet' else 384,
-            mlp_dim=3072 if dataset == 'imagenet' else 1536,
+            image_size=224 if dataset == 'imagenet' else (84 if dataset == 'mini_imagenet' else 32),
+            patch_size=16 if dataset == 'imagenet' else (7 if dataset == 'mini_imagenet' else 4),
+            stride=16 if dataset == 'imagenet' else (7 if dataset == 'mini_imagenet' else 2),
+            token_hidden_dim=768 if dataset in ['imagenet', 'mini_imagenet'] else 384,
+            mlp_dim=3072 if dataset in ['imagenet', 'mini_imagenet'] else 1536,
             use_old=kwargs.get('use_old', False),
         )
+    elif method == 'ijepa':
+        return create_ijepa_ssl_model(dataset=dataset, **kwargs)
     raise NotImplementedError(f"SSL method '{method}' not supported.")
 
 
@@ -73,8 +78,11 @@ def build_ssl_encoder(
     device: str = 'cpu',
     **kwargs,
 ):
-    encoder = get_encoder(encoder_type, dataset)
-    ssl_model = get_ssl_model(method, encoder, dataset, **kwargs)
+    if method == 'ijepa':
+        ssl_model = get_ssl_model(method, None, dataset, **kwargs)
+    else:
+        encoder = get_encoder(encoder_type, dataset)
+        ssl_model = get_ssl_model(method, encoder, dataset, **kwargs)
 
     if checkpoint:
         if os.path.isdir(checkpoint):
@@ -85,4 +93,3 @@ def build_ssl_encoder(
             raise FileNotFoundError(f"Checkpoint path {checkpoint} not found.")
 
     return ssl_model
-
