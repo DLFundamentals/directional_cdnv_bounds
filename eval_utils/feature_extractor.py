@@ -26,7 +26,7 @@ class FeatureExtractor:
             labels.append(y.cpu())
 
         features_h = torch.cat(feats_h, dim=0)
-        features_gh = torch.cat(feats_gh, dim=0)
+        features_gh = torch.cat(feats_gh, dim=0) if g_h else None
         labels = torch.cat(labels, dim=0)
 
         return [features_h, features_gh], labels

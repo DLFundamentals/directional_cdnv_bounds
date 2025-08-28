@@ -75,7 +75,7 @@ def main(args):
     embedding_layer = 0 # 0 for h, 1 for g(h)
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
-        train_features[embedding_layer], train_labels,
+        test_features[embedding_layer], test_labels,
         n_shot=100,
         repeat=1,
         selected_classes=None
