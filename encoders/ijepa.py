@@ -13,9 +13,8 @@ class IJepaAdapter(nn.Module):
     
     
     def forward(self, x):
-        encoder_outputs = self.encoder(x)
-        h = encoder_outputs.last_hidden_state[:, 0]  # CLS token
-            
+        encoder_outputs = self.ijepa_model(x)
+        h = encoder_outputs.last_hidden_state[:, 0]  # CLS token     
         return h, None
 
 

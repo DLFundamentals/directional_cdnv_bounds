@@ -117,7 +117,7 @@ def _load_raw_datasets(dataset_name, dataset_path):
     Returns:
         train_dataset, test_dataset, labels_train, labels_test
     """
-    if dataset_name == "imagenet":
+    if dataset_name == "mini_imagenet":
         ds = load_dataset("timm/mini-imagenet")
         return ds["train"], ds["test"], np.array(ds["train"]["label"]), np.array(ds["test"]["label"])
 

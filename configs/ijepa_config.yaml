@@ -8,12 +8,12 @@ dataset:
   num_output_classes: 100 
 
 training:
-  batch_size: 128 
-  num_epochs: 200  
+  batch_size: 896 
+  num_epochs: 2501  
   lr: 0.001  
   augmentations_type: "imagenet"
   augment_both: True
-  save_every: 25
+  save_every: 10
   log_every: 10
   track_performance: False
   multi_gpu: True
@@ -21,22 +21,19 @@ training:
 
 model:
   encoder_type: "ijepa"
-  pretrained: False
+  pretrained: True
   context_encoder_depth: 12
   target_encoder_depth: 12
   predictor_depth: 6
   embed_dim: 768
   ema_momentum: 0.996
-  image_size: 84
-  patch_size: 7 
-
-
+  image_size: 224
+  patch_size: 16
 
 loss:
   temperature: 0.1  
 
 evaluation:
-  K: [5, 10, 20]
   checkpoints_dir: "experiments/ijepa/mini_imagenet/checkpoints/"  
   perform_knn: False
   perform_cdnv: True

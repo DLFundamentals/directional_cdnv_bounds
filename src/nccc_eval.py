@@ -51,6 +51,8 @@ def main(args):
         kwargs = {
             'use_old': False
         }
+    elif encoder_type == 'ijepa':
+        kwargs = {} # @HeisenbergsCat03 do we need any arguments here?
 
     ssl_model = build_ssl_encoder(
         method=config['method_type'],
@@ -87,7 +89,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NCCC Evaluation Script")
     parser.add_argument('--config', type=str, required=True, help='Path to the configuration file')
-    parser.add_argument('--ckpt_path', type=str, required=True, help='Path to the SSL model checkpoint')
+    parser.add_argument('--ckpt_path', type=str, help='Path to the SSL model checkpoint')
     parser.add_argument('--output_path', type=str, default='logs/nccc', help='Path to save evaluation results')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
     parser.add_argument('--repeat', type=int, default=1, help='Number of repeats for evaluation')

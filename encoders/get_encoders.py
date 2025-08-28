@@ -2,9 +2,7 @@ import os
 import torch
 import torchvision.models as models
 from encoders.simclr import SimCLR  # adjust this import to your layout
-from ijepa import create_ijepa_encoder, create_ijepa_ssl_model
-
-
+from encoders.ijepa import create_ijepa_encoder, create_ijepa_ssl_model
 
 SUPPORTED_ENCODERS = {
     'resnet50': lambda dataset: models.resnet50(pretrained=False),
