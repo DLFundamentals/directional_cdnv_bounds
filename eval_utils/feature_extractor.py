@@ -21,12 +21,12 @@ class FeatureExtractor:
             x = x.to(self.device)
             h, g_h = self.model(x)
             feats_h.append(h.view(h.size(0), -1).cpu())
-            if g_h:
+            if g_h is not None:
                 feats_gh.append(g_h.view(g_h.size(0), -1).cpu())
             labels.append(y.cpu())
 
         features_h = torch.cat(feats_h, dim=0)
-        features_gh = torch.cat(feats_gh, dim=0)
+        features_gh = torch.cat(feats_gh, dim=0) if g_h is not None else None
         labels = torch.cat(labels, dim=0)
 
         return [features_h, features_gh], labels

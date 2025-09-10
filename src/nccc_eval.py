@@ -34,7 +34,7 @@ def main(args):
         dataset_path=config['dataset']['path'],
         augment_both_views=config['linear']['augment_both'],
         batch_size=config['linear']['batch_size'],
-        test=True
+        test=True,
     )
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
@@ -76,7 +76,7 @@ def main(args):
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
         train_features[embedding_layer], train_labels,
-        n_shot=100,
+        n_shot=500,
         repeat=1,
         selected_classes=None
     )
