@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from transformers import IJepaModel, IJepaConfig
+from transformers import IJepaModel, IJepaConfig, AutoImageProcessor
 
 
 class IJepaAdapter(nn.Module):
@@ -10,10 +10,13 @@ class IJepaAdapter(nn.Module):
         self.ijepa_model = ijepa_model
         self.encoder = ijepa_model.encoder
         hidden_size = ijepa_model.config.hidden_size
+        self.processor = AutoImageProcessor.from_pretrained("facebook/ijepa_vith14_1k")
+
     
     
     def forward(self, x):
-        encoder_outputs = self.ijepa_model(x)
+        processed = self.processor(x, return_tensors="pt")
+        encoder_outputs = self.ijepa_model(processed)
         h = encoder_outputs.last_hidden_state[:, 0]  # CLS token     
         return h, None
 
