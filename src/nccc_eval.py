@@ -58,6 +58,9 @@ def main(args):
     elif encoder_type == 'ijepa':
         kwargs = {} # @HeisenbergsCat03 do we need any arguments here?
 
+    elif encoder_type == 'clip':
+        kwargs = {}
+
     ssl_model = build_ssl_encoder(
         method=config['method_type'],
         encoder_type=config['model']['encoder_type'],
