@@ -2,6 +2,7 @@ import sys, os, argparse, yaml, pandas as pd
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
+import random
 torch.set_default_dtype(torch.float32)
 
 from encoders.get_encoders import build_ssl_encoder
@@ -28,13 +29,16 @@ def main(args):
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
+    num_output_classes = config['dataset']['num_output_classes']
     # build dataset
+    classes_groups = random.sample(range(num_output_classes),2)
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         dataset_name=config['dataset']['name'],
         dataset_path=config['dataset']['path'],
         augment_both_views=config['linear']['augment_both'],
         batch_size=config['linear']['batch_size'],
         test=True,
+        classes = classes_groups
     )
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
@@ -76,15 +80,37 @@ def main(args):
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
         test_features[embedding_layer], test_labels,
-        n_shot=100,
-        repeat=1,
+        n_shot=args.n_shot,
+        repeat=args.repeat,
         selected_classes=None
     )
     # make sure to use above selected classes while evaluating
-    accs = evaluator.evaluate(
+    acc_train = evaluator.evaluate(
+        train_features[embedding_layer], train_labels, centers, selected_classes
+    )
+    acc_test = evaluator.evaluate(
         test_features[embedding_layer], test_labels, centers, selected_classes
     )
-    print(f"Evaluation accuracies: {accs}")
+
+    # prepare row
+    row = {
+        "seed": args.seed,
+        "n_shot": args.n_shot,
+        "train_acc": acc_train,
+        "test_acc": acc_test,
+    }
+
+    os.makedirs(args.output_path, exist_ok=True)
+    csv_path = os.path.join(args.output_path, "results.csv")
+
+    df = pd.DataFrame([row])
+    if not os.path.exists(csv_path):
+        df.to_csv(csv_path, index=False)
+    else:
+        df.to_csv(csv_path, mode='a', header=False, index=False)
+
+    print(f"Appended results to {csv_path}: {row}")    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NCCC Evaluation Script")
