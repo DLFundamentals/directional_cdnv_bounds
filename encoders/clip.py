@@ -1,7 +1,11 @@
 import torch
 import torch.nn as nn
 from transformers import CLIPModel, CLIPConfig, AutoProcessor
+import yaml
 
+config_file = "/home/yashsalunkhe619/directional_cdnv_bounds/configs/clip_config.yaml"
+with open(config_file, 'r') as f:
+    config = yaml.safe_load(f)
 
 class CLIPAdapter(nn.Module):
     def __init__(self, clip_model):
@@ -23,10 +27,16 @@ class CLIPAdapter(nn.Module):
 
 def create_clip_encoder(dataset: str):
     if dataset in ['imagenet', 'mini_imagenet']:
-        model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        if config.vit_size == "B" and config.vision_patch_size == 32:
+            model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        elif config.vit_size == "B" and config.vision_patch_size == 16:
+            model = CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
+        elif config.vit_size == "L" and config.vision_patch_size == 14:
+            model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        else:
+            raise ValueError("Unsupported CLIP model size or patch size.")
         return model.vision_model
     else:
-        # Create custom CLIP config for smaller datasets
         vision_config = {
             'hidden_size': 768,
             'num_hidden_layers': 12,
