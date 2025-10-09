@@ -57,6 +57,9 @@ def main(args):
     elif encoder_type == 'clip':
         kwargs = {}
 
+    elif encoder_type == 'mae':
+        kwargs = {}
+
     ssl_model = build_ssl_encoder(
         method=config['method_type'],
         encoder_type=config['model']['encoder_type'],

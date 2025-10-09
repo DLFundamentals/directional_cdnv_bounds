@@ -4,6 +4,7 @@ import torchvision.models as models
 from encoders.simclr import SimCLR  # adjust this import to your layout
 from encoders.ijepa import create_ijepa_encoder, create_ijepa_ssl_model
 from encoders.clip import create_clip_encoder, create_clip_ssl_model
+from encoders.mae import create_vitmae_encoder, create_vitmae_ssl_model 
 
 SUPPORTED_ENCODERS = {
     'resnet50': lambda dataset: models.resnet50(pretrained=False),
@@ -17,6 +18,7 @@ SUPPORTED_ENCODERS = {
     ),
     'ijepa': lambda dataset: create_ijepa_encoder(dataset=dataset),
     'clip': lambda dataset: create_clip_encoder(dataset=dataset),
+    'mae': lambda dataset: create_vitmae_encoder(dataset=dataset, pretrained=True)
 }
 
 
@@ -45,7 +47,10 @@ def get_ssl_model(method: str, encoder, dataset: str, **kwargs):
         return create_ijepa_ssl_model(dataset=dataset, **kwargs)
     elif method == 'clip':
         return create_clip_ssl_model(dataset=dataset, **kwargs)
-    raise NotImplementedError(f"SSL method '{method}' not supported.")
+    elif method == 'mae':
+        return create_vitmae_ssl_model(dataset=dataset, pretrained=True, **kwargs)
+    else:
+        raise NotImplementedError(f"SSL method '{method}' not supported.")
 
 
 def load_latest_checkpoint(ssl_model, checkpoint_dir: str, device: str):
