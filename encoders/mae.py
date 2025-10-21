@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformers import ViTMAEModel, ViTMAEForPreTraining, ViTMAEConfig, AutoImageProcessor
+from transformers import ViTMAEModel, ViTMAEForPreTraining, ViTMAEConfig
 
 
 class ViTMAEAdapter(nn.Module):

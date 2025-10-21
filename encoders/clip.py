@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformers import CLIPModel, CLIPConfig, AutoProcessor
+from transformers import CLIPModel, CLIPConfig
 import yaml
 
 config_file = "/home/yashsalunkhe619/directional_cdnv_bounds/configs/clip_config.yaml"
