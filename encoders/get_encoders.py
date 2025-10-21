@@ -3,6 +3,7 @@ import torch
 import torchvision.models as models
 from encoders.simclr import SimCLR  # adjust this import to your layout
 from encoders.ijepa import create_ijepa_encoder, create_ijepa_ssl_model
+from encoders.clip import create_clip_encoder, create_clip_ssl_model
 
 SUPPORTED_ENCODERS = {
     'resnet50': lambda dataset: models.resnet50(pretrained=False),
@@ -15,6 +16,7 @@ SUPPORTED_ENCODERS = {
         mlp_dim=3072 if dataset in ['imagenet', 'mini_imagenet'] else 1536,
     ),
     'ijepa': lambda dataset: create_ijepa_encoder(dataset=dataset),
+    'clip': lambda dataset: create_clip_encoder(dataset=dataset),
 }
 
 
@@ -41,6 +43,8 @@ def get_ssl_model(method: str, encoder, dataset: str, **kwargs):
         )
     elif method == 'ijepa':
         return create_ijepa_ssl_model(dataset=dataset, **kwargs)
+    elif method == 'clip':
+        return create_clip_ssl_model(dataset=dataset, **kwargs)
     raise NotImplementedError(f"SSL method '{method}' not supported.")
 
 
@@ -76,7 +80,7 @@ def build_ssl_encoder(
     device: str = 'cpu',
     **kwargs,
 ):
-    if method == 'ijepa':
+    if method == 'ijepa' or method == 'clip':
         ssl_model = get_ssl_model(method, None, dataset, **kwargs)
     else:
         encoder = get_encoder(encoder_type, dataset)
