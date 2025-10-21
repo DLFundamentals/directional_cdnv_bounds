@@ -63,7 +63,9 @@ def main(args):
         kwargs = {}
 
     elif encoder_type == 'mae':
-        kwargs = {}
+        kwargs = {
+            'use_pretraining': False
+        }
    
     ssl_model = build_ssl_encoder(
         method=config['method_type'],

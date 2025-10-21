@@ -78,7 +78,7 @@ def create_vitmae_encoder(dataset: str, pretrained: bool = True):
 def create_vitmae_ssl_model(
     dataset: str,
     pretrained: bool = True,
-    use_pretraining: bool = True,
+    use_pretraining: bool = False,
     mask_ratio: float = 0.75,
     norm_pix_loss: bool = False,
     decoder_num_attention_heads: int = 16,
