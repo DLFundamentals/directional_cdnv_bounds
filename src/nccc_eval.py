@@ -2,8 +2,9 @@ import sys, os, argparse, yaml, pandas as pd
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
-torch.set_default_dtype(torch.float32)
 import random
+torch.set_default_dtype(torch.float32)
+
 from encoders.get_encoders import build_ssl_encoder
 from data_utils.dataloaders import get_dataset
 from eval_utils.feature_extractor import FeatureExtractor
@@ -28,8 +29,8 @@ def main(args):
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    # build dataset
     num_output_classes = config['dataset']['num_output_classes']
+    # build dataset
     classes_groups = random.sample(range(num_output_classes),2)
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         dataset_name=config['dataset']['name'],
@@ -60,9 +61,6 @@ def main(args):
     elif encoder_type == 'clip':
         kwargs = {}
 
-    elif encoder_type == 'mae':
-         kwargs = {}
-
     ssl_model = build_ssl_encoder(
         method=config['method_type'],
         encoder_type=config['model']['encoder_type'],
@@ -85,8 +83,8 @@ def main(args):
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
         test_features[embedding_layer], test_labels,
-        n_shot=100,
-        repeat=1,
+        n_shot=args.n_shot,
+        repeat=args.repeat,
         selected_classes=None
     )
     # make sure to use above selected classes while evaluating

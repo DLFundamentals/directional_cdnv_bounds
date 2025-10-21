@@ -10,12 +10,14 @@ class IJepaAdapter(nn.Module):
         self.ijepa_model = ijepa_model
         self.encoder = ijepa_model.encoder
         hidden_size = ijepa_model.config.hidden_size
+        #self.processor = AutoImageProcessor.from_pretrained("facebook/ijepa_vith14_1k")
 
     
     
     def forward(self, x):
+        #processed = self.processor(x, return_tensors="pt")
         encoder_outputs = self.ijepa_model(x)
-        h = encoder_outputs.last_hidden_state[:, 0]  # CLS token
+        h = encoder_outputs.last_hidden_state[:, 0]  # CLS token     
         return h, None
 
 
