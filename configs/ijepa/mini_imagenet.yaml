@@ -1,23 +1,10 @@
 experiment_name: "ijepa/mini_imagenet"
 method_type: "ijepa"
-supervision: "SSL"
 
 dataset:
   name: "mini_imagenet"
   path: "./data/"
   num_output_classes: 100 
-
-training:
-  batch_size: 896 
-  num_epochs: 2501  
-  lr: 0.001  
-  augmentations_type: "imagenet"
-  augment_both: True
-  save_every: 10
-  log_every: 10
-  track_performance: False
-  multi_gpu: True
-  world_size: 2
 
 model:
   encoder_type: "ijepa"
@@ -30,19 +17,14 @@ model:
   image_size: 224
   patch_size: 16
 
-loss:
-  temperature: 0.1  
-
 evaluation:
-  checkpoints_dir: "experiments/ijepa/mini_imagenet/checkpoints/"  
-  perform_knn: False
+  checkpoints_dir: "./"
   perform_cdnv: True
   perform_nccc: True
   perform_linear: True
-  perform_tsne: False
 
 linear:
-  batch_size: 128
+  batch_size: 256
   num_epochs: 100  
   num_output_classes: 100  
   augment_both: False

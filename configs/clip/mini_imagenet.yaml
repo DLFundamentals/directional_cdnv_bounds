@@ -1,0 +1,35 @@
+experiment_name: "clip/mini_imagenet"
+method_type: "clip"
+
+dataset:
+  name: "mini_imagenet"
+  path: "./data/"
+  num_output_classes: 100 
+
+model:
+  encoder_type: "clip"
+  pretrained: True
+  vision_layers: 12
+  vision_width: 768
+  vision_patch_size: 32
+  image_size: 224
+  projection_dim: 512
+  temperature: 0.07
+  vit_size: "B"
+
+evaluation:
+  checkpoints_dir: "./"
+  perform_cdnv: True
+  perform_nccc: True
+  perform_linear: True
+
+linear:
+  batch_size: 256
+  num_epochs: 100  
+  num_output_classes: 100  
+  augment_both: False
+  top_lr: 3e-4
+  momentum: 0.9
+  weight_decay: 5e-4
+  track_performance: True
+  save_every: 10
