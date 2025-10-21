@@ -31,7 +31,8 @@ def main(args):
 
     num_output_classes = config['dataset']['num_output_classes']
     # build dataset
-    classes_groups = random.sample(range(num_output_classes),2)
+    # classes_groups = random.sample(range(num_output_classes),2)
+    classes_groups = None
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         dataset_name=config['dataset']['name'],
         dataset_path=config['dataset']['path'],
@@ -61,6 +62,9 @@ def main(args):
     elif encoder_type == 'clip':
         kwargs = {}
 
+    elif encoder_type == 'mae':
+        kwargs = {}
+   
     ssl_model = build_ssl_encoder(
         method=config['method_type'],
         encoder_type=config['model']['encoder_type'],

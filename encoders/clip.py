@@ -3,10 +3,6 @@ import torch.nn as nn
 from transformers import CLIPModel, CLIPConfig
 import yaml
 
-config_file = "/home/yashsalunkhe619/directional_cdnv_bounds/configs/clip_config.yaml"
-with open(config_file, 'r') as f:
-    config = yaml.safe_load(f)
-
 class CLIPAdapter(nn.Module):
     def __init__(self, clip_model):
         super().__init__()
@@ -14,8 +10,6 @@ class CLIPAdapter(nn.Module):
         self.encoder = clip_model.vision_model
         hidden_size = clip_model.config.vision_config.hidden_size
 
-    
-        
     def forward(self, x):
         pixel_values = x.to(self.clip_model.device)
         
