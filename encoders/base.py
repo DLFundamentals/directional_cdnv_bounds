@@ -52,7 +52,6 @@ class BaseEncoder(nn.Module):
         if self.hook_handle is not None:
             self.hook_handle.remove()
             self.hook_handle = None
-
   
     def forward(self, x) -> torch.Tensor:
         if self.layer == -1:
