@@ -5,7 +5,7 @@ from datasets import load_dataset
 from torch.utils.data import DataLoader, Sampler, DistributedSampler, Subset, ConcatDataset
 from torchvision import datasets, transforms
 
-from data_utils.augmentations import get_transforms
+from data_utils.augmentations_hub.registry import get_transforms
 from data_utils.batch_samplers import (
     ApproxStratifiedSampler,
     DistributedStratifiedBatchSampler,

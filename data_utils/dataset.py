@@ -46,11 +46,11 @@ class SimCLRDataset(Dataset):
             view2 (Tensor): Second view (augmented or basic) of the image.
             label (int): Label of the image.
         """
-        if 'imagenet' in self.dataset_name:
+        if 'imagenet' in self.dataset_name: # hf datasets
             sample = self.dataset[idx]
             image = sample['image'].convert("RGB")
             label = sample['label']
-        else:
+        else: # torch datasets
             image, label = self.dataset[idx]
 
         view1 = self.train_transforms(image)
