@@ -3,7 +3,6 @@ import torch.nn as nn
 import torchvision.models as models
 from transformers import IJepaModel, IJepaConfig, AutoImageProcessor
 
-
 class IJepaAdapter(nn.Module):
     def __init__(self, ijepa_model):
         super().__init__()
@@ -12,19 +11,17 @@ class IJepaAdapter(nn.Module):
         hidden_size = ijepa_model.config.hidden_size
         #self.processor = AutoImageProcessor.from_pretrained("facebook/ijepa_vith14_1k")
 
-    
-    
     def forward(self, x):
         #processed = self.processor(x, return_tensors="pt")
         encoder_outputs = self.ijepa_model(x)
         h = encoder_outputs.last_hidden_state[:, 0]  # CLS token     
         return h, None
 
-
-def create_ijepa_encoder(dataset: str):
+def create_ijepa_model(dataset: str):
     if dataset in ['imagenet', 'mini_imagenet']:
+        # add other versions like in CLIP
         model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
-        return model.encoder
+        return model
     else:
         config = IJepaConfig(
             hidden_size=768,
@@ -41,10 +38,10 @@ def create_ijepa_encoder(dataset: str):
             hidden_dropout_prob=0.0,
         )
         model = IJepaModel(config)
-        return model.encoder
+        return model
 
 
-def create_ijepa_ssl_model(dataset: str, **kwargs):
+def create_ijepa_adapter(dataset: str, **kwargs):
     
-    model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
+    model = create_ijepa_model(dataset)
     return IJepaAdapter(model)
