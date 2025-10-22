@@ -16,7 +16,6 @@ class SimCLR(nn.Module):
         layer: Union[str, int]  = -2,
         dataset: str = 'imagenet',
         width_multiplier: int = 1,
-        pretrained: bool = False,
         hidden_dim: int = 512,
         projection_dim: int = 128,
         **kwargs
@@ -26,8 +25,11 @@ class SimCLR(nn.Module):
         # Wrap model based on architecture type
         if isinstance(model, models.ResNet): 
             self.encoder = ResNetEncoder(
-                model, layer=layer, dataset=dataset,
-                width_multiplier=width_multiplier, pretrained=pretrained
+                model, 
+                dataset=dataset,
+                layer=layer,
+                width_multiplier=kwargs.get('width_multiplier', width_multiplier), 
+                pretrained=False
             )
         elif isinstance(model, models.VisionTransformer):
             self.encoder = ViTEncoder(
@@ -43,7 +45,7 @@ class SimCLR(nn.Module):
 
         # run a mock image tensor to instantiate parameters
         with torch.no_grad():
-            if dataset == 'imagenet':
+            if 'imagenet' in dataset:
                 h = self.encoder(torch.randn(1, 3, 224, 224))
             elif 'cifar' in dataset or dataset == 'svhn':
                 h = self.encoder(torch.randn(1, 3, 32, 32))
@@ -51,8 +53,14 @@ class SimCLR(nn.Module):
                 raise NotImplementedError(f"{dataset} not implemented")
 
         input_dim = h.shape[1]
+        hidden_dim = kwargs.get('hidden_dim', hidden_dim)
+        projection_dim = kwargs.get('projection_dim', projection_dim)
         self.projector = SimCLRProjector(input_dim, hidden_dim, projection_dim)
-        self.track_performance = kwargs.get('track_performance', False)
+
+        # load state dict
+        ckpt_path = kwargs.get('ckpt_path', None)
+        if ckpt_path:
+            self.load_snapshot(ckpt_path)
 
     def forward(self, x):
         h = self.encoder(x)
@@ -60,6 +68,14 @@ class SimCLR(nn.Module):
         g_h = self.projector(h)
         return h, F.normalize(g_h, dim=-1)
     
+    def load_snapshot(self, snapshot_path: str, device: str ='cuda'):
+        snapshot = torch.load(snapshot_path, map_location=device, weights_only=True)
+        state_dict = snapshot['MODEL_STATE']
+        epochs_trained = snapshot['EPOCHS_RUN']
+        print(f"Loaded model from epoch {epochs_trained}")
+        self.load_state_dict(state_dict)
+        self.eval()
+        print("SSL Model loaded successfully")
 
 # ========================== Projector ==========================
 class SimCLRProjector(nn.Module):

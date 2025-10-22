@@ -5,8 +5,8 @@ import torch
 import random
 torch.set_default_dtype(torch.float32)
 
-from encoders.get_encoders import build_ssl_encoder
 from data_utils.dataloaders import get_dataset
+from algorithms.factory import build_ssl_model
 from eval_utils.feature_extractor import FeatureExtractor
 from eval_utils.nccc_utils import NCCCEvaluator
 from eval_utils.nccc_utils import NCCCEvaluator
@@ -28,11 +28,12 @@ def main(args):
     # load configuration
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-
-    num_output_classes = config['dataset']['num_output_classes']
     # build dataset
+    num_output_classes = config['dataset']['num_output_classes']
     classes_groups = random.sample(range(num_output_classes),2)
+    classes_groups = None
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
+        method = config['method_type'],
         dataset_name=config['dataset']['name'],
         dataset_path=config['dataset']['path'],
         augment_both_views=config['linear']['augment_both'],
@@ -42,33 +43,33 @@ def main(args):
     )
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
-
-    # build encoder
-    encoder_type = config['model']['encoder_type']
-    if encoder_type == 'resnet50':
-        kwargs = {
-            'width_multiplier': config['model'].get('width_multiplier', 1),
-            'hidden_dim': config['model'].get('hidden_dim', 2048),
-            'projection_dim': config['model'].get('projection_dim', 128),
-        }
-    elif encoder_type == 'vit_b':
-        kwargs = {
-            'use_old': False
-        }
+    # set kwargs
+    method = config['method_type']
+    if method == 'simclr':
+        encoder_type = config['model']['encoder_type']
+        if encoder_type == 'resnet50':
+            kwargs = {
+                'width_multiplier': config['model'].get('width_multiplier', 1),
+                'hidden_dim': config['model'].get('hidden_dim', 2048),
+                'projection_dim': config['model'].get('projection_dim', 128),
+                'ckpt_path': args.ckpt_path,
+            }
+        elif encoder_type == 'vit_b':
+            kwargs = {
+                # TODO
+            }
     elif encoder_type == 'ijepa':
-        kwargs = {} # @HeisenbergsCat03 do we need any arguments here?
+        kwargs = {} # TODO
 
     elif encoder_type == 'clip':
-        kwargs = {}
+        kwargs = {} # TODO
 
-    ssl_model = build_ssl_encoder(
+    ssl_model = build_ssl_model(
         method=config['method_type'],
-        encoder_type=config['model']['encoder_type'],
         dataset=config['dataset']['name'],
-        checkpoint=args.ckpt_path,
-        device=device,
         **kwargs
     )
+    ssl_model.to(device)
     freeze_model(ssl_model)
     print(f"Loaded SSL model: {ssl_model.__class__.__name__} with encoder {encoder_type}")
 
@@ -82,7 +83,7 @@ def main(args):
     embedding_layer = 0 # 0 for h, 1 for g(h)
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
-        test_features[embedding_layer], test_labels,
+        train_features[embedding_layer], train_labels,
         n_shot=args.n_shot,
         repeat=args.repeat,
         selected_classes=None

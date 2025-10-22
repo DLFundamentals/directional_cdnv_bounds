@@ -1,8 +1,8 @@
-experiment_name: "simclr/imagenet"
+experiment_name: "simclr/mini_imagenet"
 method_type: "simclr"
 
 dataset:
-  name: "imagenet"
+  name: "mini_imagenet"
   path: "./data/"
   num_output_classes: 100
 

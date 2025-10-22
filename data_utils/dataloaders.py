@@ -15,6 +15,7 @@ from data_utils.dataset import SimCLRDataset
 
 
 def get_dataset(
+    method,
     dataset_name,
     dataset_path,
     augment_both_views=True,
@@ -52,7 +53,7 @@ def get_dataset(
 
     # Load datasets and labels
     raw_train, raw_test, labels_train, labels_test = _load_raw_datasets(dataset_name, dataset_path)
-    train_tfms, basic_tfms = _get_transforms(dataset_name)
+    train_tfms, basic_tfms = _get_transforms(method, dataset_name)
 
     # Filter for selected classes if specified
     if selected_classes is not None:
@@ -143,11 +144,12 @@ def _load_raw_datasets(dataset_name, dataset_path):
     raise NotImplementedError(f"Unsupported dataset: {dataset_name}")
 
 
-def _get_transforms(dataset_name):
+def _get_transforms(method, dataset_name):
     """
     Returns the data augmentation and evaluation transforms for the dataset.
     """
-    return get_transforms("cifar" if "cifar" in dataset_name else dataset_name)
+    return get_transforms(method=method,
+        dataset="cifar" if "cifar" in dataset_name else dataset_name)
 
 
 def _build_sampler(supervision, dataset_name, labels, batch_size, multi_gpu, world_size):

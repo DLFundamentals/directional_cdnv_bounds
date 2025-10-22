@@ -8,8 +8,8 @@ AUGMENTATION_REGISTRY = {
     'siglip': clip.get_clip_transforms,  # share for now
 }
 
-def get_transforms(model_name, dataset='imagenet'):
-    key = model_name.lower()
+def get_transforms(method, dataset='imagenet'):
+    key = method.lower()
     if key not in AUGMENTATION_REGISTRY:
-        raise NotImplementedError(f"No augmentations defined for {model_name}")
+        raise NotImplementedError(f"No augmentations defined for {method}")
     return AUGMENTATION_REGISTRY[key](dataset)
