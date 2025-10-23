@@ -9,18 +9,23 @@ class IJepaAdapter(nn.Module):
         self.ijepa_model = ijepa_model
         self.encoder = ijepa_model.encoder
         hidden_size = ijepa_model.config.hidden_size
-        #self.processor = AutoImageProcessor.from_pretrained("facebook/ijepa_vith14_1k")
+        self.processor = AutoImageProcessor.from_pretrained("facebook/ijepa_vith14_1k")
 
     def forward(self, x):
-        #processed = self.processor(x, return_tensors="pt")
-        encoder_outputs = self.ijepa_model(x)
+        # breakpoint()
+        processed = self.processor(x, return_tensors="pt", do_rescale=False)
+        encoder_outputs = self.ijepa_model(processed['pixel_values'].to(x.device))
         h = encoder_outputs.last_hidden_state[:, 0]  # CLS token     
         return h, None
 
-def create_ijepa_model(dataset: str):
+def create_ijepa_model(dataset: str,
+                       encoder_type: str = 'vit_h',
+                       patch_size: int = 14,):
     if dataset in ['imagenet', 'mini_imagenet']:
-        # add other versions like in CLIP
-        model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
+        if encoder_type.lower() == 'vit_h' and patch_size == 14:
+            model = IJepaModel.from_pretrained("facebook/ijepa_vith14_1k")
+        elif encoder_type.lower() == 'vit_h' and patch_size == 16:
+            model = IJepaModel.from_pretrained("facebook/ijepa_vith16_1k")
         return model
     else:
         config = IJepaConfig(
@@ -40,8 +45,8 @@ def create_ijepa_model(dataset: str):
         model = IJepaModel(config)
         return model
 
-
 def create_ijepa_adapter(dataset: str, **kwargs):
-    
-    model = create_ijepa_model(dataset)
+    enocder_type = kwargs.get('encoder_type', 'vit_h')
+    patch_size = kwargs.get('patch_size', 14)
+    model = create_ijepa_model(dataset, **kwargs)
     return IJepaAdapter(model)

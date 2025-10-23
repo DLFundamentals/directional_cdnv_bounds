@@ -45,8 +45,8 @@ def main(args):
     print(f"Test set size: {len(test_loader.dataset)}")
     # set kwargs
     method = config['method_type']
+    encoder_type = config['model']['encoder_type']
     if method == 'simclr':
-        encoder_type = config['model']['encoder_type']
         if encoder_type == 'resnet50':
             kwargs = {
                 'width_multiplier': config['model'].get('width_multiplier', 1),
@@ -58,10 +58,13 @@ def main(args):
             kwargs = {
                 # TODO
             }
-    elif encoder_type == 'ijepa':
-        kwargs = {} # TODO
+    elif method == 'ijepa':
+        kwargs = {
+            'patch_size': config['model']['patch_size'],
+            'encoder_type': config['model']['encoder_type']
+        }
 
-    elif encoder_type == 'clip':
+    elif method == 'clip':
         kwargs = {} # TODO
 
     ssl_model = build_ssl_model(

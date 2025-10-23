@@ -7,7 +7,7 @@ dataset:
   num_output_classes: 100 
 
 model:
-  encoder_type: "ijepa"
+  encoder_type: "vit_h"
   pretrained: True
   context_encoder_depth: 12
   target_encoder_depth: 12
@@ -15,7 +15,7 @@ model:
   embed_dim: 768
   ema_momentum: 0.996
   image_size: 224
-  patch_size: 16
+  patch_size: 14
 
 evaluation:
   checkpoints_dir: "./"
