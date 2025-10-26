@@ -1,16 +1,14 @@
 #!/bin/bash
 
 # --- Configuration ---
-GPU_ID=1
-LOGS_DIR="logs/"
-CKPT_DIR=""
-MAX_PARALLEL_JOBS=5
+GPU_ID=2
+MAX_PARALLEL_JOBS=3
 
-# --- Allow OUTPUT_DIR and CONFIG_FILE to be passed as the first argument, with a default if not provided ---
+# --- Allow few variables to be passed as argument, with a default if not provided ---
 if [ -n "$1" ]; then
     OUTPUT_DIR="$1"
 else
-    OUTPUT_DIR="results/imagenet" # Default value if no argument is provided
+    OUTPUT_DIR="results/simclr/nccc" # Default value if no argument is provided
 fi
 
 if [ -n "$2" ]; then
@@ -19,8 +17,23 @@ else
     CONFIG_FILE="configs/simclr_pretrained_imagenet.yaml" # default value
 fi
 
+if [ -n "$3" ]; then
+    LOGS_DIR="$3"
+else
+    LOGS_DIR="logs/simclr/nccc" # default value
+fi
+
+if [ -n "$4" ]; then
+    CKPT_DIR="$4"
+else
+    CKPT_DIR="" # default value
+fi
+
+
+
 # --- Create output directory if it doesn't exist ---
 mkdir -p "${OUTPUT_DIR}"
+mkdir -p "${LOGS_DIR}"
 
 echo "Starting evaluation for different N_SHOT values..."
 

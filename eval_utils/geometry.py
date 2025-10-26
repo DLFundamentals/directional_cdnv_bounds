@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 class GeometricEvaluator:
     def __init__(self, num_classes=10, device='cuda'):
@@ -87,3 +88,63 @@ class GeometricEvaluator:
                 num_pairs += 1
 
         return (dir_cdnv_total / num_pairs).item() if num_pairs > 0 else None
+
+    def compute_class_covariances(self, features, labels, means):
+        covs, vars_trace = [], []
+        for c in range(self.num_classes):
+            idxs = (labels == c).nonzero(as_tuple=True)[0]
+            if len(idxs) == 0:
+                covs.append(None)
+                vars_trace.append(None)
+                continue
+            xc = features[idxs] - means[c]
+            # unbiased covariance (d x d)
+            cov = (xc.T @ xc) / (len(idxs)-1)
+            covs.append(cov)
+            vars_trace.append(torch.trace(cov))
+        return covs, vars_trace
+
+    def compute_fourth_moments(self, features, labels, means):
+        M4 = []
+        for c in range(self.num_classes):
+            idxs = (labels == c).nonzero(as_tuple=True)[0]
+            if len(idxs) == 0:
+                M4.append(None)
+                continue
+            xc = features[idxs] - means[c]
+            norms4 = (xc.norm(dim=1) ** 4).mean()
+            M4.append(norms4)
+        return M4
+
+    def compute_pairwise_metrics(self, features, labels):
+        features, labels = features.to(self.device), labels.to(self.device)
+        # features = F.normalize(features, dim=1, p=2)
+        means = self.compute_class_means(features, labels)
+        covs, vars_trace = self.compute_class_covariances(features, labels, means)
+        M4 = self.compute_fourth_moments(features, labels, means)
+
+        results = {}
+        for i in range(self.num_classes):
+            for j in range(self.num_classes):
+                if i == j:
+                    continue
+                if any(x is None for x in (means[i], means[j], covs[i], covs[j])):
+                    continue
+                D = means[j] - means[i]
+                d2 = torch.norm(D, p=2) ** 2
+                u = D / torch.sqrt(d2)
+
+                vi, vj = vars_trace[i], vars_trace[j]
+                Vij = (vi + vj) / d2
+                Vtilde_ij = (u @ covs[i] @ u) / d2
+                Theta_ij = (M4[i] + M4[j]) / (d2 ** 2)
+
+                results[(i, j)] = {
+                    "d2": d2.item(),
+                    "vi": vi.item(),
+                    "vj": vj.item(),
+                    "Vij": Vij.item(),
+                    "Vtilde_ij": Vtilde_ij.item(),
+                    "Theta_ij": Theta_ij.item(),
+                }
+        return results

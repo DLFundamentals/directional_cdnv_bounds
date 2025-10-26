@@ -9,7 +9,7 @@ dataset:
 model:
   encoder_type: "resnet50"
   pretrained: False
-  width_multiplier: 2
+  width_multiplier: 1
   hidden_dim: 2048
   projection_dim: 128
 
