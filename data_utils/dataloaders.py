@@ -118,10 +118,19 @@ def _load_raw_datasets(dataset_name, dataset_path):
     Returns:
         train_dataset, test_dataset, labels_train, labels_test
     """
+
     if dataset_name == "mini_imagenet":
         ds = load_dataset("timm/mini-imagenet")
         return ds["train"], ds["test"], np.array(ds["train"]["label"]), np.array(ds["test"]["label"])
 
+    if dataset_name == "imagenet":
+        ds = load_dataset("ILSVRC/imagenet-1k")
+        train_ds = ds["train"]
+        val_ds   = ds["validation"]
+        train_labels = np.array(train_ds["label"])
+        val_labels   = np.array(val_ds["label"])
+        return train_ds, val_ds, train_labels, val_labels
+    
     elif dataset_name == "cifar10":
         train = datasets.CIFAR10(root=dataset_path, train=True, download=True)
         test = datasets.CIFAR10(root=dataset_path, train=False, download=True)
