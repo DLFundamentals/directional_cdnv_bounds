@@ -20,6 +20,7 @@ def set_seed(seed=42):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False  # Ensures determinism
+    random.seed(seed)
 
 def main(args):
     set_seed(args.seed)
@@ -31,7 +32,6 @@ def main(args):
     # build dataset
     num_output_classes = config['dataset']['num_output_classes']
     classes_groups = random.sample(range(num_output_classes),2)
-    classes_groups = None
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         method = config['method_type'],
         dataset_name=config['dataset']['name'],
