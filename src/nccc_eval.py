@@ -65,7 +65,9 @@ def main(args):
         }
 
     elif method == 'clip':
-        kwargs = {} # TODO
+        kwargs = {} # 
+    elif method == 'mae':
+        kwargs = {}
 
     ssl_model = build_ssl_model(
         method=config['method_type'],

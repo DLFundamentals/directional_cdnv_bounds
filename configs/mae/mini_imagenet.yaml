@@ -2,7 +2,7 @@
   method_type: "mae"
   supervision: "SSL"
   dataset:
-    name: "mini_imagenet"
+    name: "imagenet"
     path: "./data/"
     num_output_classes: 100
   training:
