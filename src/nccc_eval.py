@@ -68,6 +68,9 @@ def main(args):
         kwargs = {} # 
     elif method == 'mae':
         kwargs = {}
+    elif method == 'vicreg':
+        kwargs = {
+        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],

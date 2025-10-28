@@ -2,12 +2,14 @@ from algorithms.clip import create_clip_adapter
 from algorithms.ijepa import create_ijepa_adapter
 from algorithms.simclr import SimCLR
 from algorithms.mae import create_vitmae_ssl_model
+from algorithms.vicreg import create_vicreg_adapter
 
 SUPPORTED_ALGORITHMS = {
     'clip': create_clip_adapter,
     'ijepa': create_ijepa_adapter,
     'simclr': SimCLR,
-    'mae': create_vitmae_ssl_model
+    'mae': create_vitmae_ssl_model,
+    'vicreg': create_vicreg_adapter
 }
 
 def build_ssl_model(method: str, dataset: str, **kwargs):

@@ -1,28 +1,30 @@
-experiment_name: "clip/mini_imagenet"
-method_type: "clip"
+experiment_name: "vicreg/mini_imagenet"
+method_type: "vicreg"
 
 dataset:
-  name: "imagenet"
+  name: "mini_imagenet"
   path: "./data/"
   num_output_classes: 100 
 
 model:
-  encoder_type: "clip"
+  model_name: "Ramos-Ramos/vicreg-resnet-50"
+  encoder_type: "resnet50"
   pretrained: True
-  vision_layers: 12
-  vision_width: 768
-  vision_patch_size: 32
+  feature_dim: 2048
+  projection_dim: 8192
+  expansion_dim: 8192
+  invariance_weight: 25.0
+  variance_weight: 25.0
+  covariance_weight: 1.0
   image_size: 224
-  projection_dim: 512
-  temperature: 0.07
-  vit_size: "B"
+  normalize: True
 
 evaluation:
   checkpoints_dir: "./"
   perform_cdnv: True
   perform_nccc: True
   perform_linear: True
-
+  
 linear:
   batch_size: 256
   num_epochs: 100  
