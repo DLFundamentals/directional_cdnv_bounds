@@ -1,0 +1,39 @@
+experiment_name: "siglip/mini_imagenet"
+method_type: "siglip"
+
+dataset:
+  name: "imagenet"
+  path: "./data/"
+  num_output_classes: 1000
+
+model:
+  model_size: "base"  # Options: 'base', 'large', 'so400m'
+  encoder_type: "vit_b"
+  pretrained: True
+  use_vision_only: True
+  hidden_size: 768
+  num_hidden_layers: 12
+  num_attention_heads: 12
+  intermediate_size: 3072
+  image_size: 224
+  patch_size: 16
+  hidden_act: "gelu_pytorch_tanh"
+  layer_norm_eps: 1e-6
+  attention_dropout: 0.0
+
+evaluation:
+  checkpoints_dir: "./"
+  perform_cdnv: True
+  perform_nccc: True
+  perform_linear: True
+
+linear:
+  batch_size: 256
+  num_epochs: 100  
+  num_output_classes: 100  
+  augment_both: False
+  top_lr: 3e-4
+  momentum: 0.9
+  weight_decay: 5e-4
+  track_performance: True
+  save_every: 10

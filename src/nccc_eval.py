@@ -71,6 +71,11 @@ def main(args):
     elif method == 'vicreg':
         kwargs = {
         }
+    elif method == 'siglip':
+        kwargs = {
+            'model_size': config['model'].get('model_size', 'base'),
+            'patch_size': config['model'].get('patch_size', 16)
+        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],
