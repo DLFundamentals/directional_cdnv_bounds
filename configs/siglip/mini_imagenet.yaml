@@ -2,9 +2,9 @@ experiment_name: "siglip/mini_imagenet"
 method_type: "siglip"
 
 dataset:
-  name: "imagenet"
+  name: "mini_imagenet"
   path: "./data/"
-  num_output_classes: 1000
+  num_output_classes: 100
 
 model:
   model_size: "base"  # Options: 'base', 'large', 'so400m'
