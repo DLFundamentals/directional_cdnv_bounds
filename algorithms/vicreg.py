@@ -11,13 +11,33 @@ class VICRegAdapter(nn.Module):
         self.feature_dim = vicreg_model.config.hidden_sizes[-1] if hasattr(vicreg_model.config, 'hidden_sizes') else 768
 
     def forward(self, x):
-        processed = self.processor(x, return_tensors="pt", do_rescale=False)
-        
-        # Get embeddings from VICReg model
-        outputs = self.vicreg_model(processed['pixel_values'].to(x.device))
-        
-        h = outputs[0] if isinstance(outputs, tuple) else outputs
-            
+        outputs = self.vicreg_model(x.to(x.device))
+
+        h = None
+        if isinstance(outputs, tuple):
+            h = outputs[0]
+        else:
+            if hasattr(outputs, 'pooler_output') and outputs.pooler_output is not None:
+                h = outputs.pooler_output
+            elif hasattr(outputs, 'last_hidden_state') and outputs.last_hidden_state is not None:
+                h = outputs.last_hidden_state
+            elif isinstance(outputs, dict):
+                for k in ('pooler_output', 'last_hidden_state', 'hidden_states', 'embeddings'):
+                    if k in outputs and outputs[k] is not None:
+                        h = outputs[k]
+                        break
+
+        if h is None:
+            raise RuntimeError(f"Could not extract tensor features from model outputs: {type(outputs)}")
+
+        if h.dim() == 3:
+            # prefer CLS token if present (first token), otherwise mean-pool
+            try:
+                # take first token (commonly CLS)
+                h = h[:, 0, :]
+            except Exception:
+                h = h.mean(dim=1)
+
         return h, None
 
 def create_vicreg_model(dataset: str,

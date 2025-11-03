@@ -1,10 +1,10 @@
-experiment_name: "vicreg/mini_imagenet"
+experiment_name: "vicreg/imagenet"
 method_type: "vicreg"
 
 dataset:
   name: "mini_imagenet"
   path: "./data/"
-  num_output_classes: 100 
+  num_output_classes: 100
 
 model:
   model_name: "Ramos-Ramos/vicreg-resnet-50"

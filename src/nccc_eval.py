@@ -31,7 +31,7 @@ def main(args):
         config = yaml.safe_load(f)
     # build dataset
     num_output_classes = config['dataset']['num_output_classes']
-    classes_groups = random.sample(range(num_output_classes),2)
+    #classes_groups = random.sample(range(num_output_classes),2)
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         method = config['method_type'],
         dataset_name=config['dataset']['name'],
@@ -39,7 +39,7 @@ def main(args):
         augment_both_views=config['linear']['augment_both'],
         batch_size=config['linear']['batch_size'],
         test=True,
-        classes = classes_groups
+        #classes = classes_groups
     )
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
