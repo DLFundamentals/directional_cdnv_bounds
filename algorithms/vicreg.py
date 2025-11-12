@@ -11,6 +11,7 @@ class VICRegAdapter(nn.Module):
         self.feature_dim = vicreg_model.config.hidden_sizes[-1] if hasattr(vicreg_model.config, 'hidden_sizes') else 768
 
     def forward(self, x):
+        breakpoint()
         outputs = self.vicreg_model(x.to(x.device))
 
         h = None
@@ -37,6 +38,7 @@ class VICRegAdapter(nn.Module):
                 h = h[:, 0, :]
             except Exception:
                 h = h.mean(dim=1)
+
 
         return h, None
 
