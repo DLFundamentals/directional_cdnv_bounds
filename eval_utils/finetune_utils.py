@@ -5,6 +5,7 @@ from tqdm import tqdm
 from collections import defaultdict
 from typing import List, Optional, Tuple
 from torch.utils.data import TensorDataset, DataLoader, Subset
+import copy
 
 class FineTuneEvaluator:
     def __init__(
@@ -36,9 +37,7 @@ class FineTuneEvaluator:
             self.test_loader = test_loader
 
             self.backbone = backbone.to(device) if backbone else None
-            # If no selected_classes provided, default to all classes present in train_labels
             if self.selected_classes is None:
-                # extract unique labels from provided train_labels tensor
                 try:
                     unique = sorted(list(set(train_labels.cpu().numpy().tolist())))
                 except Exception:
@@ -90,7 +89,6 @@ class FineTuneEvaluator:
             selected = random.sample(indices, n_samples)
             selected_indices.extend(selected)
 
-        # ensure indices are on the same device as features to avoid runtime errors
         idx_device = features.device
         selected_indices = torch.tensor(selected_indices, dtype=torch.long, device=idx_device)
         return features[selected_indices], labels[selected_indices], selected_indices.cpu().numpy()
@@ -163,16 +161,13 @@ class FineTuneEvaluator:
             sample_feat = self._extract_features(sample_feat)
             feat_dim = sample_feat.size(1)
         
-        # Create classifier
         classifier = torch.nn.Linear(feat_dim, len(self.selected_classes)).to(self.device)
         
-        # Optimize both backbone and classifier
         optimizer = torch.optim.Adam(
             list(self.backbone.parameters()) + list(classifier.parameters()), 
             lr=self.lr
         )
 
-        # Training loop
         for epoch in range(self.epochs):
             epoch_loss = 0.0
             num_batches = 0
@@ -199,11 +194,9 @@ class FineTuneEvaluator:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
                 
-                # Ensure labels are 1D (squeeze if needed)
                 if labels.dim() > 1:
                     labels = labels.squeeze()
                 
-                # Forward pass through backbone and classifier
                 emb = self.backbone(images)
                 emb = self._extract_features(emb)
                 
@@ -303,28 +296,26 @@ class FineTuneEvaluator:
             self.test_features, self.test_labels
         )
 
-        # Prepare train and test loaders
         if n_samples is not None:
-            # Few-shot: sample specific indices
             _, _, train_indices = self._sample_fewshot(train_feats, train_labels, n_samples)
             train_loader_to_use = self._create_fewshot_loader(self.train_loader, train_indices)
         else:
-            # Use full training set
             train_loader_to_use = self.train_loader
         
-        # For test, we typically use all test data
         test_loader_to_use = self.test_loader
 
         train_accs, test_accs = [], []
+        # Saving initial backbone state for independent repeats
+        initial_state = copy.deepcopy(self.backbone.state_dict())
 
         for run in range(repeat):
             print(f"Run {run + 1}/{repeat}")
             
             # Reset backbone and classifier for each run
-            # Note: This creates fresh copies to avoid training on already-trained models
+            # Note: This creates fresh copies to avoid training on already-trained model
+            self.backbone.load_state_dict(initial_state)
             finetuned_backbone, classifier = self.finetune_model(train_loader_to_use)
-            
-            # Evaluate
+
             train_acc = self.evaluate_model(finetuned_backbone, classifier, train_loader_to_use)
             test_acc = self.evaluate_model(finetuned_backbone, classifier, test_loader_to_use)
 
