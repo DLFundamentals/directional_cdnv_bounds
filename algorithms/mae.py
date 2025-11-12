@@ -75,7 +75,7 @@ def create_vitmae_encoder(dataset: str, pretrained: bool = True):
         return model
 
 
-def create_vitmae_ssl_model(
+def create_mae_adapter(
     dataset: str,
     pretrained: bool = True,
     use_pretraining: bool = False,
