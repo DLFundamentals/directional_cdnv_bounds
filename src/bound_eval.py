@@ -73,6 +73,14 @@ def main(args):
 
     elif method == 'clip':
         kwargs = {} # TODO
+    
+    elif method == 'mae':
+        kwargs = {
+        
+        }
+    elif method == 'vicreg':
+        kwargs = {
+        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],
@@ -105,7 +113,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NCCC Evaluation Script")
     parser.add_argument('--config', type=str, required=True, help='Path to the configuration file')
     parser.add_argument('--ckpt_path', type=str, help='Path to the SSL model checkpoint')
-    parser.add_argument('--output_path', type=str, default='logs/simclr/geometry', help='Path to save evaluation results')
+    parser.add_argument('--output_path', type=str, default='logs/mae/geometry', help='Path to save evaluation results')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
     args = parser.parse_args()
 
