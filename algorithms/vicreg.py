@@ -38,6 +38,7 @@ class VICRegAdapter(nn.Module):
             except Exception:
                 h = h.mean(dim=1)
 
+
         return h, None
 
 def create_vicreg_model(dataset: str,

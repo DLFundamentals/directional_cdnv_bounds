@@ -8,21 +8,20 @@ torch.set_default_dtype(torch.float32)
 from data_utils.dataloaders import get_dataset
 from algorithms.factory import build_ssl_model
 from eval_utils.feature_extractor import FeatureExtractor
-from eval_utils.nccc_utils import NCCCEvaluator
-from eval_utils.nccc_utils import NCCCEvaluator
+from eval_utils.finetune_utils import FineTuneEvaluator
 
 def freeze_model(model):
     for param in model.parameters():
         param.requires_grad = False
-
+    
 def set_seed(seed=42):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False  # Ensures determinism
-    random.seed(seed)
+    random.seed(seed)   
 
-def main(args):
+def main(args): 
     set_seed(args.seed)
     # set device
     device='cuda' if torch.cuda.is_available() else 'cpu'
@@ -58,63 +57,57 @@ def main(args):
             kwargs = {
                 # TODO
             }
+
     elif method == 'ijepa':
-        kwargs = {
+        if encoder_type == 'vit_b':
+            kwargs = {
             'patch_size': config['model']['patch_size'],
             'encoder_type': config['model']['encoder_type']
-        }
 
+            }
     elif method == 'clip':
-        kwargs = {} # 
+        kwargs = {} #
+
     elif method == 'mae':
         kwargs = {}
-    elif method == 'vicreg':
-        kwargs = {
-        }
-    elif method == 'siglip':
-        kwargs = {
-            'model_size': config['model'].get('model_size', 'base'),
-            'patch_size': config['model'].get('patch_size', 16)
-        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],
         dataset=config['dataset']['name'],
         **kwargs
     )
+
     ssl_model.to(device)
-    freeze_model(ssl_model)
     print(f"Loaded SSL model: {ssl_model.__class__.__name__} with encoder {encoder_type}")
 
-    # extract features
     ssl_extractor = FeatureExtractor(ssl_model)
     train_features, train_labels = ssl_extractor.extract_features(train_loader)
     test_features, test_labels = ssl_extractor.extract_features(test_loader)
 
-    # initialize evaluator
-    # TODO: make n_shot, repeat, selected_classes configurable
-    embedding_layer = 0 # 0 for h, 1 for g(h)
-    evaluator = NCCCEvaluator(device=device)
-    centers, selected_classes = evaluator.compute_class_centers(
-        train_features[embedding_layer], train_labels,
-        n_shot=args.n_shot,
-        repeat=args.repeat,
-        selected_classes=None
-    )
-    # make sure to use above selected classes while evaluating
-    acc_train = evaluator.evaluate(
-        train_features[embedding_layer], train_labels, centers, selected_classes
-    )
-    acc_test = evaluator.evaluate(
-        test_features[embedding_layer], test_labels, centers, selected_classes
+    embedding_layer = 0  # 0 for h, 1 for g(h)
+    evaluator = FineTuneEvaluator(
+        train_features = train_features[embedding_layer],
+        train_labels = train_labels,
+        test_features = test_features[embedding_layer],
+        test_labels = test_labels,
+        num_output_classes = num_output_classes,
+        device = device,
+        backbone = ssl_model.encoder,
+        epochs = args.epochs
     )
 
-    # prepare row
+    train_acc, test_acc = evaluator.evaluate(
+        n_samples=args.n_shot,
+        repeat=args.repeat
+    )
+    print(f"Finetune Evaluation -> Train Accuracy: {train_acc:.2%}, Test Accuracy: {test_acc:.2%}")
+
+    # Save results to a CSV file
     row = {
         "seed": args.seed,
         "n_shot": args.n_shot,
-        "train_acc": acc_train,
-        "test_acc": acc_test,
+        "train_acc": train_acc,
+        "test_acc": test_acc
     }
 
     os.makedirs(args.output_path, exist_ok=True)
@@ -126,18 +119,18 @@ def main(args):
     else:
         df.to_csv(csv_path, mode='a', header=False, index=False)
 
-    print(f"Appended results to {csv_path}: {row}")    
+    print(f"Results saved to {csv_path} in directory {args.output_path}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="NCCC Evaluation Script")
-    parser.add_argument('--config', type=str, required=True, help='Path to the configuration file')
-    parser.add_argument('--ckpt_path', type=str, help='Path to the SSL model checkpoint')
-    parser.add_argument('--output_path', type=str, default='logs/nccc', help='Path to save evaluation results')
-    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
-    parser.add_argument('--repeat', type=int, default=1, help='Number of repeats for evaluation')
-    parser.add_argument('--n_shot', type=int, default=100, help='Number of shots for few-shot evaluation')
-    args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Finetune Evaluation Script")
+    parser.add_argument('--config', type=str, required=True, help='Path to the config YAML file.')
+    parser.add_argument('--ckpt_path', type=str, default=None, help='Path to the SSL model checkpoint.')
+    parser.add_argument('--n_shot', type=int, default=5, help='Number of shots for few-shot evaluation.')
+    parser.add_argument('--repeat', type=int, default=10, help='Number of repetitions for evaluation.')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility.')
+    parser.add_argument('--output_path', type=str, default='./finetune_results', help='Directory to save results CSV.')
+    parser.add_argument('--epochs', type=int, default=100, help='Number of epochs for finetuning.')
 
-    os.makedirs(args.output_path, exist_ok=True)
+    args = parser.parse_args()
     main(args)

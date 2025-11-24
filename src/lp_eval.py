@@ -8,8 +8,7 @@ torch.set_default_dtype(torch.float32)
 from data_utils.dataloaders import get_dataset
 from algorithms.factory import build_ssl_model
 from eval_utils.feature_extractor import FeatureExtractor
-from eval_utils.nccc_utils import NCCCEvaluator
-from eval_utils.nccc_utils import NCCCEvaluator
+from eval_utils.lp_utils import LinearProbeEvaluator
 
 def freeze_model(model):
     for param in model.parameters():
@@ -32,6 +31,7 @@ def main(args):
     # build dataset
     num_output_classes = config['dataset']['num_output_classes']
     classes_groups = random.sample(range(num_output_classes),2)
+    classes_groups = None # for new algorithm setup
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         method = config['method_type'],
         dataset_name=config['dataset']['name'],
@@ -68,14 +68,6 @@ def main(args):
         kwargs = {} # 
     elif method == 'mae':
         kwargs = {}
-    elif method == 'vicreg':
-        kwargs = {
-        }
-    elif method == 'siglip':
-        kwargs = {
-            'model_size': config['model'].get('model_size', 'base'),
-            'patch_size': config['model'].get('patch_size', 16)
-        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],
@@ -94,20 +86,22 @@ def main(args):
     # initialize evaluator
     # TODO: make n_shot, repeat, selected_classes configurable
     embedding_layer = 0 # 0 for h, 1 for g(h)
-    evaluator = NCCCEvaluator(device=device)
-    centers, selected_classes = evaluator.compute_class_centers(
-        train_features[embedding_layer], train_labels,
-        n_shot=args.n_shot,
-        repeat=args.repeat,
-        selected_classes=None
+    evaluator = LinearProbeEvaluator(
+        train_features=train_features[embedding_layer],
+        train_labels=train_labels,
+        test_features=test_features[embedding_layer],
+        test_labels=test_labels,
+        num_output_classes=num_output_classes,
+        device=device,
+        selected_classes=classes_groups
     )
-    # make sure to use above selected classes while evaluating
-    acc_train = evaluator.evaluate(
-        train_features[embedding_layer], train_labels, centers, selected_classes
+
+    # evaluate
+    acc_train, acc_test = evaluator.evaluate(
+        n_samples=args.n_shot,
+        repeat=args.repeat
     )
-    acc_test = evaluator.evaluate(
-        test_features[embedding_layer], test_labels, centers, selected_classes
-    )
+    print(f"Linear Probe Evaluation -- Train Accuracy: {acc_train:.2%}, Test Accuracy: {acc_test:.2%}")
 
     # prepare row
     row = {

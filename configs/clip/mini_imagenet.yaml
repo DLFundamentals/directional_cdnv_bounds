@@ -2,7 +2,7 @@ experiment_name: "clip/mini_imagenet"
 method_type: "clip"
 
 dataset:
-  name: "imagenet"
+  name: "mini_imagenet"
   path: "./data/"
   num_output_classes: 100 
 

@@ -3,6 +3,16 @@ import numpy as np
 import random
 from typing import List, Optional
 
+"""
+Example Usage:
+evaluator = NCCCEvaluator(device='cuda')
+centers, selected_classes = evaluator.compute_class_centers(
+    train_features, train_labels,
+    n_shot=5, repeat=5, selected_classes=[0, 1, 2, 3, 4]
+)
+accs = evaluator.evaluate(test_features, test_labels, centers, selected_classes)
+
+"""
 
 class NCCCEvaluator:
     def __init__(self, device: str = 'cuda'):
