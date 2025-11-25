@@ -30,7 +30,15 @@ def main(args):
         config = yaml.safe_load(f)
     # build dataset
     num_output_classes = config['dataset']['num_output_classes']
-    classes_groups = random.sample(range(num_output_classes),2)
+    
+    # Determine which classes to use
+    if args.num_classes is not None and args.num_classes < num_output_classes:
+        classes_groups = random.sample(range(num_output_classes), args.num_classes)
+        print(f"Using {args.num_classes} randomly sampled classes: {classes_groups}")
+    else:
+        classes_groups = None  # Use all classes
+        print(f"Using all {num_output_classes} classes")
+    
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         method = config['method_type'],
         dataset_name=config['dataset']['name'],
@@ -42,6 +50,7 @@ def main(args):
     )
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
+    
     # set kwargs
     method = config['method_type']
     encoder_type = config['model']['encoder_type']
@@ -80,6 +89,7 @@ def main(args):
     ssl_model.to(device)
     print(f"Loaded SSL model: {ssl_model.__class__.__name__} with encoder {encoder_type}")
 
+    # Extract features for initial setup (to determine dimensions, etc.)
     ssl_extractor = FeatureExtractor(ssl_model)
     train_features, train_labels = ssl_extractor.extract_features(train_loader)
     test_features, test_labels = ssl_extractor.extract_features(test_loader)
@@ -93,7 +103,9 @@ def main(args):
         num_output_classes = num_output_classes,
         device = device,
         backbone = ssl_model.encoder,
-        epochs = args.epochs
+        epochs = args.epochs,
+        train_loader = train_loader,  # Pass the DataLoader
+        test_loader = test_loader     # Pass the DataLoader
     )
 
     train_acc, test_acc = evaluator.evaluate(
@@ -105,7 +117,8 @@ def main(args):
     # Save results to a CSV file
     row = {
         "seed": args.seed,
-        "n_shot": args.n_shot,
+        "n_shot": args.n_shot if args.n_shot is not None else "all",
+        "num_classes": args.num_classes if args.num_classes is not None else num_output_classes,
         "train_acc": train_acc,
         "test_acc": test_acc
     }
@@ -126,11 +139,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Finetune Evaluation Script")
     parser.add_argument('--config', type=str, required=True, help='Path to the config YAML file.')
     parser.add_argument('--ckpt_path', type=str, default=None, help='Path to the SSL model checkpoint.')
-    parser.add_argument('--n_shot', type=int, default=5, help='Number of shots for few-shot evaluation.')
+    parser.add_argument('--n_shot', type=int, default=None, help='Number of shots per class for few-shot evaluation. If None, use all available data.')
     parser.add_argument('--repeat', type=int, default=10, help='Number of repetitions for evaluation.')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility.')
     parser.add_argument('--output_path', type=str, default='./finetune_results', help='Directory to save results CSV.')
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs for finetuning.')
+    parser.add_argument('--num_classes', type=int, default=None, help='Number of classes to randomly sample. If None, use all classes.')
 
     args = parser.parse_args()
     main(args)
