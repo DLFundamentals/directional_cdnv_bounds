@@ -9,7 +9,7 @@ SUPPORTED_ALGORITHMS = {
     'clip': create_clip_adapter,
     'ijepa': create_ijepa_adapter,
     'simclr': SimCLR,
-    'mae': create_vitmae_ssl_model,
+    'mae': create_mae_adapter,
     'vicreg': create_vicreg_adapter,
     'siglip': create_siglip_adapter
 }
