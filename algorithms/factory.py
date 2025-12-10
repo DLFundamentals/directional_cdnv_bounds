@@ -4,6 +4,7 @@ from algorithms.simclr import SimCLR
 from algorithms.mae import create_mae_adapter
 from algorithms.vicreg import create_vicreg_adapter
 from algorithms.siglip import create_siglip_adapter
+from algorithms.dinov3 import create_dinov3_adapter
 
 SUPPORTED_ALGORITHMS = {
     'clip': create_clip_adapter,
@@ -11,7 +12,8 @@ SUPPORTED_ALGORITHMS = {
     'simclr': SimCLR,
     'mae': create_mae_adapter,
     'vicreg': create_vicreg_adapter,
-    'siglip': create_siglip_adapter
+    'siglip': create_siglip_adapter,
+    'dinov3': create_dinov3_adapter
 }
 
 def build_ssl_model(method: str, dataset: str, **kwargs):

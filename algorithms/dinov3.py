@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformers import AutoModel, AutoImageProcessor, Dinov3Config
+from transformers import AutoModel, AutoImageProcessor, Dinov2Config  # Use Dinov2Config for DINOv3
 
 class Dinov3Adapter(nn.Module):
     def __init__(self, dinov3_model, processor):
@@ -8,7 +8,7 @@ class Dinov3Adapter(nn.Module):
         self.dinov3_model = dinov3_model
         self.processor = processor
         hidden_size = dinov3_model.config.hidden_size
-
+    
     def forward(self, x):
         processed = self.processor(x, return_tensors="pt", do_rescale=False)
         
@@ -37,7 +37,7 @@ def create_dinov3_model(dataset: str,
         model = AutoModel.from_pretrained(model_name)
         return model
     else:
-        config = Dinov3Config(
+        config = Dinov2Config(  # Use Dinov2Config
             hidden_size=384 if encoder_type == 'vit_s' else 768,
             num_hidden_layers=12 if encoder_type == 'vit_s' else 12,
             num_attention_heads=6 if encoder_type == 'vit_s' else 12,
@@ -45,18 +45,12 @@ def create_dinov3_model(dataset: str,
             image_size=32 if 'cifar' in dataset.lower() else 224,
             patch_size=4 if 'cifar' in dataset.lower() else patch_size,
             num_channels=3,
-            query_bias=True,
-            key_bias=False,
-            value_bias=True,
-            proj_bias=True,
-            mlp_bias=True,
+            qkv_bias=True,
             hidden_act="gelu",
-            layer_norm_eps=1e-5,
-            attention_dropout=0.0,
+            layer_norm_eps=1e-6,
+            attention_probs_dropout_prob=0.0,
             initializer_range=0.02,
-            layerscale_value=1.0,
             drop_path_rate=0.0,
-            num_register_tokens=4,  
         )
         model = AutoModel.from_config(config)
         return model
