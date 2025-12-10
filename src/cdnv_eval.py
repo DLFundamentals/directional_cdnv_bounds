@@ -3,6 +3,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
 import random
+
 torch.set_default_dtype(torch.float32)
 
 from data_utils.dataloaders import get_dataset
@@ -30,13 +31,17 @@ def main(args):
         config = yaml.safe_load(f)
     # build dataset
     num_output_classes = config['dataset']['num_output_classes']
+    #classes_groups = random.sample(range(num_output_classes),3)
+
+    num_output_classes = config['dataset']['num_output_classes']
     _, train_loader, _, test_loader, train_labels, test_labels = get_dataset(
         method = config['method_type'],
         dataset_name=config['dataset']['name'],
         dataset_path=config['dataset']['path'],
         augment_both_views=config['linear']['augment_both'],
         batch_size=config['linear']['batch_size'],
-        test=True,
+        test=True
+        #classes = classes_groups
     )
     print(f"Train set size: {len(train_loader.dataset)}")
     print(f"Test set size: {len(test_loader.dataset)}")
@@ -73,6 +78,11 @@ def main(args):
         kwargs = {
         }
 
+    elif method == 'siglip':
+        kwargs = {
+            'model_size': config['model'].get('model_size', 'base'),
+            'patch_size': config['model'].get('patch_size', 16)
+        }
     ssl_model = build_ssl_model(
         method=config['method_type'],
         dataset=config['dataset']['name'],
@@ -107,7 +117,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NCCC Evaluation Script")
     parser.add_argument('--config', type=str, required=True, help='Path to the configuration file')
     parser.add_argument('--ckpt_path', type=str, help='Path to the SSL model checkpoint')
-    parser.add_argument('--output_path', type=str, default='results/simclr/geometry', help='Path to save evaluation results')
+    parser.add_argument('--output_path', type=str, default='results/siglip/geometry', help='Path to save evaluation results')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
     args = parser.parse_args()
 

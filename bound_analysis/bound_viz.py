@@ -75,12 +75,12 @@ def plot_error_bound(train_error, test_error,
 
     # ✅ Legends
     handles = [
-        mlines.Line2D([], [], color=nccc_color, linestyle='-', label="NCCC"),
-        mlines.Line2D([], [], color=error_bound_color, linestyle='-', label="Error bound"),
+        mlines.Line2D([], [], color=nccc_color, linestyle='-', label="NCCC Error"),
+        mlines.Line2D([], [], color=error_bound_color, linestyle='-', label="Our bound"),
         mlines.Line2D([], [], color=inf__color, linestyle='--', label="Lim bound"),
     ]
     if old_train_error_bound is not None:
-        handles.append(mlines.Line2D([], [], color=old_error_bound_color, linestyle='-', label="Old bound"))
+        handles.append(mlines.Line2D([], [], color=old_error_bound_color, linestyle='-', label="Luthra et al. (2025)"))
     style_handles = [
         mlines.Line2D([], [], color='black', linestyle='-', marker='o', label='Train', markersize=12),
         mlines.Line2D([], [], color='black', linestyle='--', marker='*', label='Test', markersize=15)
@@ -113,7 +113,7 @@ def plot_error_bound(train_error, test_error,
     plt.grid(True, which='major', axis='y', linestyle='--', linewidth=0.8, alpha=0.9)
 
     plt.xlabel(r"Number of shots")
-    plt.ylabel(r"Error ($2^i$ scale)")
+    plt.ylabel(r"Error")
     plt.tight_layout()
 
     if output_path:
