@@ -1,0 +1,38 @@
+
+experiment_name: "vicreg/imagenet"
+method_type: "vicreg"
+
+dataset:
+  name: "mini_imagenet"
+  path: "./data/"
+  num_output_classes: 100
+
+model:
+  model_name: "Ramos-Ramos/vicreg-resnet-50"
+  encoder_type: "resnet50"
+  pretrained: True
+  feature_dim: 2048
+  projection_dim: 8192
+  expansion_dim: 8192
+  invariance_weight: 25.0
+  variance_weight: 25.0
+  covariance_weight: 1.0
+  image_size: 224
+  normalize: True
+
+evaluation:
+  checkpoints_dir: "./"
+  perform_cdnv: True
+  perform_nccc: True
+  perform_linear: True
+  
+linear:
+  batch_size: 256
+  num_epochs: 100  
+  num_output_classes: 100  
+  augment_both: False
+  top_lr: 3e-4
+  momentum: 0.9
+  weight_decay: 5e-4
+  track_performance: True
+  save_every: 10
