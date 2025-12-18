@@ -1,0 +1,21 @@
+# @package _global_
+
+model:
+  resnet_name: "resnet50"
+  pretrained: false
+  
+  # VICReg projection head parameters
+  hidden_dim: 2048
+  output_dim: 2048
+  num_layers: 2
+  
+  # VICReg loss coefficients (from original paper)
+  lambda_param: 25.0  # Invariance loss weight
+  mu_param: 25.0      # Variance loss weight
+  nu_param: 1.0       # Covariance loss weight
+  
+  # Optimizer parameters
+  lr: 0.0005          # Base learning rate (will be scaled)
+  weight_decay: 0.05
+  warmup_epochs: 10
+  min_lr: 0.0         # Minimum LR after cosine decay

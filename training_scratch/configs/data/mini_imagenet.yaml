@@ -1,11 +1,10 @@
 name: mini_imagenet
 hf_repo: timm/mini-imagenet
 hf_cache_dir: ${oc.env:HF_DATASETS_CACHE,./.hf_datasets_cache}
-
 img_size: 224
 batch_size: 1024
 num_workers: 8
+num_views: 2  # Add this line for VICReg (use 1 for MAE)
 
-# HF split names
 train_split: train
 test_split: test

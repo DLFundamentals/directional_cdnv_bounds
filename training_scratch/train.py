@@ -9,16 +9,18 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.mae import LightlyMAE
+from models.vicreg import LightlyVICReg
 from data.mini_imagenet_datamodule import MiniImageNetDataModule, MiniImageNetCfg
 from utils.export_teacher import export_teacher_encoder_only
 from utils.ckpt_schedule import ScheduledCheckpoint
 from utils.linear_probe_callback import LinearProbeCallback
+from utils.cdnv_callback import CDNVCallback
 from utils.mae_recon_callback import MAEReconCallback
 
 @hydra.main(
     version_base=None,
     config_path="./configs",
-    config_name="exp/mae_mini_vitb",
+    config_name="exp/vicreg_resnet50",
 )
 def main(cfg: DictConfig):
 
@@ -30,8 +32,13 @@ def main(cfg: DictConfig):
     data_cfg = MiniImageNetCfg(**cfg.data)
     data_module = MiniImageNetDataModule(data_cfg)
 
-    # build model
-    model = LightlyMAE(cfg)
+    # build model based on method
+    if cfg.method.name.lower() == "mae":
+        model = LightlyMAE(cfg)
+    elif cfg.method.name.lower() == "vicreg":
+        model = LightlyVICReg(cfg)
+    else:
+        raise ValueError(f"Unknown method: {cfg.method.name}. Supported: 'mae', 'vicreg'")
 
     # custom model checkpointing & logging
     sched_cb = ScheduledCheckpoint(
@@ -48,23 +55,23 @@ def main(cfg: DictConfig):
             name=cfg.logging.run_name,
             log_model=cfg.logging.log_model,
             tags=list(cfg.logging.tags)
-        )
-
+        )                       
     else:
         logger = CSVLogger(save_dir=cfg.paths.exp_dir, name="logs")
 
     # linear probe callback
     probe_cb = LinearProbeCallback(**cfg.probe)
-    # reconstruction callback
-    # viz_cb = MAEReconCallback(**cfg.viz)
+    
+    # CDNV callback
+    cdnv_cb = CDNVCallback(**cfg.cdnv)
+    
+    # reconstruction callback (only for MAE)
+    callbacks = [sched_cb, probe_cb, cdnv_cb]
+    if cfg.method.name.lower() == "mae" and cfg.viz.enabled:
+        viz_cb = MAEReconCallback(**cfg.viz)
+        callbacks.append(viz_cb)
+    
     # trainer
-    # # resume from checkpoint if specified TODO
-    # if cfg.paths.resume_from_checkpoint is not None:
-    #     print(f"Resuming from checkpoint: {cfg.paths.resume_from_checkpoint}")
-    #     resume_ckpt = cfg.paths.resume_from_checkpoint
-    # else:
-    #     resume_ckpt = None
-
     trainer = pl.Trainer(
         default_root_dir=cfg.paths.exp_dir,
         devices=cfg.trainer.devices,
@@ -74,7 +81,7 @@ def main(cfg: DictConfig):
         use_distributed_sampler=cfg.trainer.use_distributed_sampler if "use_distributed_sampler" in cfg.trainer else False,
         log_every_n_steps=cfg.logging.log_every_n_steps,
         precision=cfg.precision,
-        callbacks=[sched_cb, probe_cb],
+        callbacks=callbacks,
         enable_checkpointing=False, # since using custom checkpoint callback
         logger=logger,
     )
@@ -82,9 +89,6 @@ def main(cfg: DictConfig):
     data_module.setup()
     train_dataloader = data_module.train_dataloader()
     val_dataloader = data_module.val_dataloader()
-
-    # trainer.fit(model, datamodule=data_module, 
-    #             ckpt_path=None) # TODO resume_ckpt
 
     trainer.fit(model, train_dataloaders=train_dataloader,
                 val_dataloaders=val_dataloader)

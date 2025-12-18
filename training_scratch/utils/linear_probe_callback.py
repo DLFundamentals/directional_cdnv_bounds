@@ -153,4 +153,3 @@ class LinearProbeCallback(pl.Callback):
             y_list.append(y.cpu())
 
         return torch.cat(feats_list, dim=0), torch.cat(y_list, dim=0)
-
