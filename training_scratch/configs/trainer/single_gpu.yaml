@@ -1,0 +1,5 @@
+devices: 1
+accelerator: gpu
+strategy: auto
+max_epochs: 2001
+accumulate_grad_batches: 1

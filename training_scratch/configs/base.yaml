@@ -1,0 +1,21 @@
+# @package _global_
+exp_name: ${hydra:job.name}
+
+seed: 123
+
+logging:
+  backend: csv # options: "csv", "wandb"
+  project: salt-theory
+  entity: null          # set if you use a team
+  run_name: ${exp_name}
+  tags: ["stage1", "mae"]
+  log_model: false      # true if you want checkpoints uploaded
+  log_every_n_steps: 50
+
+
+precision: bf16-mixed   # change to "16-mixed" if bf16 isn't supported
+
+paths:
+  output_root: ${oc.env:OUTPUT_ROOT,./checkpoints}
+  exp_dir: ${paths.output_root}/${exp_name}
+  resume_from_checkpoint: ${oc.env:RESUME_FROM_CHECKPOINT,null}  # set this env var to resume from a checkpoint
