@@ -174,7 +174,7 @@ class CDNVCallback(pl. Callback):
                         sync_dist=True,
                     )
                     pl_module.print(
-                        f"[CDNV] epoch={epoch} val_dir_cdnv={val_dir_cdnv:. 6f}"
+                        f"[CDNV] epoch={epoch} val_dir_cdnv={val_dir_cdnv:.6f}"
                     )
 
         finally:

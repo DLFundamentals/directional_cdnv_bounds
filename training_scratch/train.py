@@ -51,7 +51,7 @@ def main(cfg: DictConfig):
     if cfg.logging.backend == "wandb":
         logger = WandbLogger(
             project=cfg.logging.project,
-            entity=cfg.logging.entity,
+            # entity=cfg.logging.entity,
             name=cfg.logging.run_name,
             log_model=cfg.logging.log_model,
             tags=list(cfg.logging.tags)
@@ -87,11 +87,10 @@ def main(cfg: DictConfig):
     )
 
     data_module.setup()
-    train_dataloader = data_module.train_dataloader()
-    val_dataloader = data_module.val_dataloader()
 
-    trainer.fit(model, train_dataloaders=train_dataloader,
-                val_dataloaders=val_dataloader)
+    # Register the datamodule with the Trainer. Do NOT pass both dataloaders
+    # and datamodule to `trainer.fit()` — Lightning will raise an error.
+    trainer.fit(model, datamodule=data_module)
 
     # export after training (only on global rank 0)
     if trainer.is_global_zero:

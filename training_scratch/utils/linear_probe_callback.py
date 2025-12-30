@@ -25,21 +25,25 @@ class LinearProbeCallback(pl.Callback):
 
     @staticmethod
     def _cls_features(backbone, images):
-        # MaskedVisionTransformerTIMM wraps a timm ViT
-        # Easiest: run the underlying ViT forward_features if available.
+        # Support both ViT and ResNet-style backbones.
+        # For ViT wrappers (e.g., MaskedVisionTransformerTIMM) prefer `backbone.vit.forward_features`.
         vit = getattr(backbone, "vit", None)
-        if vit is None:
-            raise RuntimeError("Expected backbone.vit to exist (MaskedVisionTransformerTIMM(vit=...)).")
+        if vit is not None:
+            out = vit.forward_features(images)
+            if out.dim() == 3:
+                return out[:, 0]
+            return out
 
-        # timm ViT commonly provides forward_features -> [B, tokens, C] or [B, C]
-        out = vit.forward_features(images)
-
-        # Handle both shapes
-        if out.dim() == 3:
-            cls = out[:, 0]            # [B, C]
+        # For other models, prefer `forward_features` if present, otherwise call the backbone directly.
+        if hasattr(backbone, "forward_features"):
+            out = backbone.forward_features(images)
         else:
-            cls = out                 # [B, C]
-        return cls
+            out = backbone(images)
+
+        # Flatten spatial dims if present
+        if out.dim() > 2:
+            out = torch.flatten(out, 1)
+        return out
 
     def on_train_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
         if not self.enabled or not trainer.is_global_zero:
