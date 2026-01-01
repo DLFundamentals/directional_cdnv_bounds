@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.mae import LightlyMAE
 from models.vicreg import LightlyVICReg
+from models.dino import LightlyDINO
 from data.mini_imagenet_datamodule import MiniImageNetDataModule, MiniImageNetCfg
 from utils.export_teacher import export_teacher_encoder_only
 from utils.ckpt_schedule import ScheduledCheckpoint
@@ -20,7 +21,7 @@ from utils.mae_recon_callback import MAEReconCallback
 @hydra.main(
     version_base=None,
     config_path="./configs",
-    config_name="exp/vicreg_resnet50",
+    config_name="exp/dino_vitB_mini.yaml",
 )
 def main(cfg: DictConfig):
 
@@ -37,8 +38,10 @@ def main(cfg: DictConfig):
         model = LightlyMAE(cfg)
     elif cfg.method.name.lower() == "vicreg":
         model = LightlyVICReg(cfg)
+    elif cfg.method.name.lower() == "dino":
+        model = LightlyDINO(cfg)
     else:
-        raise ValueError(f"Unknown method: {cfg.method.name}. Supported: 'mae', 'vicreg'")
+        raise ValueError(f"Unknown method: {cfg.method.name}. Supported: 'mae', 'vicreg', 'dino'")
 
     # custom model checkpointing & logging
     sched_cb = ScheduledCheckpoint(
@@ -86,10 +89,8 @@ def main(cfg: DictConfig):
         logger=logger,
     )
 
-    data_module.setup()
-
-    # Register the datamodule with the Trainer. Do NOT pass both dataloaders
-    # and datamodule to `trainer.fit()` — Lightning will raise an error.
+    # Lightning automatically calls setup() in each distributed process                                                                                                                                                         
+    # Do NOT call data_module.setup() manually before trainer.fit() in DDP
     trainer.fit(model, datamodule=data_module)
 
     # export after training (only on global rank 0)

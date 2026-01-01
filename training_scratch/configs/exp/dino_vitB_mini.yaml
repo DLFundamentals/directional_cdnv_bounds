@@ -1,14 +1,15 @@
 # @package _global_
 
-exp_name: resnet50_vicreg
+exp_name: vitB_dino_mini
 
 defaults:
   - /base
   - /data: mini_imagenet
-  - /model: resnet50
-  - /method: vicreg
-  - /trainer: single_gpu
-  - /trainer/checkpoint  # <-- add this
+  - /model: vit_b
+  - /method: dino
+  - /trainer: ddp
+  - /trainer/checkpoint
+  - _self_
 
 
 probe:
@@ -24,16 +25,7 @@ probe:
 
 cdnv:
   every_n_epochs: 100
-  max_train_batches:  200
+  max_train_batches: 200
   max_val_batches: 50
   num_classes: 100  
   enabled: true
-  compute_on_train: true
-  compute_on_val: true
-
-
-viz:
-  enabled: False
-  every_n_epochs: 100
-  num_images: 8
-  tag: viz/mae_recon

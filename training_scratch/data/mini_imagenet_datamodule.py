@@ -40,9 +40,22 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         self.ds_train = None
         self.ds_test = None
 
-        # Augmentation for training (used for SSL)
-        self.train_tf = transforms.Compose([
-            transforms.RandomResizedCrop(self.cfg.img_size, scale=(0.2, 1.0)),
+        # Global crop augmentation (for first 2 views in DINO)
+        self.global_crop_tf = transforms.Compose([
+            transforms.RandomResizedCrop(self.cfg.img_size, scale=(0.32, 1.0)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomApply([
+                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+            ], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.485, 0.456, 0.406),
+                                 std=(0.229, 0.224, 0.225)),
+        ])
+        
+        # Local crop augmentation (for remaining views in DINO)
+        self.local_crop_tf = transforms.Compose([
+            transforms.RandomResizedCrop(96, scale=(0.05, 0.32)),  # Smaller crops
             transforms.RandomHorizontalFlip(),
             transforms.RandomApply([
                 transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
@@ -89,55 +102,69 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         """
         Collate function that returns multiple views for SSL methods.
         For train=True and num_views > 1, applies augmentation multiple times.
+        For DINO: first 2 views are global crops, remaining are local crops.
         """
-        tf = self.train_tf if train else self.test_tf
         labels = [ex.get("label", -1) for ex in batch]
         
         if train and self.cfg.num_views > 1:
             # Create multiple augmented views of each image
             views = []
-            for _ in range(self.cfg.num_views):
+            for i in range(self.cfg.num_views):
+                # First 2 views: global crops (224x224)
+                # Remaining views: local crops (96x96)
+                tf = self.global_crop_tf if i < 2 else self.local_crop_tf
                 images = [tf(ex["image"].convert("RGB")) for ex in batch]
                 views.append(torch.stack(images, dim=0))
             return views, torch.tensor(labels, dtype=torch.long)
         else:
             # Single view (for validation or MAE)
-            images = [tf(ex["image"].convert("RGB")) for ex in batch]
+            images = [self.test_tf(ex["image"].convert("RGB")) for ex in batch]
             return [torch.stack(images, dim=0)], torch.tensor(labels, dtype=torch.long)
+
+    def train_collate(self, batch):
+        """Collate function for training loader (with augmentations)."""
+        return self._collate(batch, train=True)
+
+    def eval_collate(self, batch):
+        """Collate function for eval/probe loaders (no augmentations)."""
+        return self._collate(batch, train=False)
 
     def train_dataloader(self):
         is_ddp = torch.distributed.is_available() and torch.distributed.is_initialized()
         sampler = DistributedSampler(self.ds_train, shuffle=True) if is_ddp else None
+        # Disable persistent_workers in DDP to avoid hanging
+        use_persistent = (self.cfg.num_workers > 0) and not is_ddp
         kwargs = dict(
             batch_size=self.cfg.batch_size,
             shuffle=(sampler is None),
             sampler=sampler,
             num_workers=self.cfg.num_workers,
             pin_memory=True,
-            persistent_workers=(self.cfg.num_workers > 0),
+            persistent_workers=use_persistent,
             drop_last=True,
-            collate_fn=lambda b: self._collate(b, train=True),
+            collate_fn=self.train_collate,
         )
         # Optional, but usually helps
         if self.cfg.num_workers > 0:
-            kwargs["prefetch_factor"] = 4
+            kwargs["prefetch_factor"] = 2
         return DataLoader(self.ds_train, **kwargs)
 
     def val_dataloader(self):
         is_ddp = torch.distributed.is_available() and torch.distributed.is_initialized()
         sampler = DistributedSampler(self.ds_test, shuffle=False) if is_ddp else None
+        use_persistent = (self.cfg.num_workers > 0) and not is_ddp
         kwargs = dict(
             batch_size=self.cfg.batch_size,
             shuffle=False,
             sampler=sampler,
             num_workers=self.cfg.num_workers,
             pin_memory=True,
-            persistent_workers=(self.cfg.num_workers > 0),
+            persistent_workers=use_persistent,
             drop_last=False,
-            collate_fn=lambda b: self._collate(b, train=False),
+            collate_fn=self.eval_collate,
         )
         if self.cfg.num_workers > 0:
-            kwargs["prefetch_factor"] = 4
+            kwargs["prefetch_factor"] = 2
         return DataLoader(self.ds_test, **kwargs)
     
     def test_dataloader(self):
@@ -148,7 +175,7 @@ class MiniImageNetDataModule(pl.LightningDataModule):
             num_workers=self.cfg.num_workers,
             pin_memory=True,
             persistent_workers=(self.cfg.num_workers > 0),
-            collate_fn=lambda b: self._collate(b, train=False),
+            collate_fn=self.eval_collate,
         )
 
     
@@ -160,7 +187,7 @@ class MiniImageNetDataModule(pl.LightningDataModule):
             num_workers=self.cfg.num_workers,
             pin_memory=True,
             persistent_workers=(self.cfg.num_workers > 0),
-            collate_fn=lambda b: self._collate(b, train=False),
+            collate_fn=self.eval_collate,
         )
     
     def probe_test_dataloader(self):
@@ -171,5 +198,5 @@ class MiniImageNetDataModule(pl.LightningDataModule):
             num_workers=self.cfg.num_workers,
             pin_memory=True,
             persistent_workers=(self.cfg.num_workers > 0),
-            collate_fn=lambda b: self._collate(b, train=False),
+            collate_fn=self.eval_collate,
         )

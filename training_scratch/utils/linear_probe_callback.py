@@ -12,7 +12,7 @@ class LinearProbeCallback(pl.Callback):
       - train a linear classifier for a few epochs (fast)
       - log val accuracy to W&B/CSV
     """
-    def __init__(self, every_n_epochs=10, max_epochs=5, lr=0.1, weight_decay=0.0,
+    def __init__(self, every_n_epochs=100, max_epochs=5, lr=0.1, weight_decay=0.0,
                  max_train_batches=200, max_val_batches=50, batch_size=256, enabled=True):
         self.every_n_epochs = every_n_epochs
         self.max_epochs = max_epochs
