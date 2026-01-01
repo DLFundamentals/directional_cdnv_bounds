@@ -21,7 +21,7 @@ class CDNVCallback(pl. Callback):
     """
     def __init__(
         self,
-        every_n_epochs=1,
+        every_n_epochs=100,
         max_train_batches=200,
         max_val_batches=50,
         num_classes=10,
@@ -93,8 +93,12 @@ class CDNVCallback(pl. Callback):
             return
 
         epoch = trainer.current_epoch + 1
-        if epoch % self.every_n_epochs != 0:
-            return
+        if epoch <= 100:
+            if epoch % 10 != 0:
+                return
+        else:
+            if epoch % 100 != 0:
+                return
 
         dm = trainer.datamodule
         if dm is None: 
