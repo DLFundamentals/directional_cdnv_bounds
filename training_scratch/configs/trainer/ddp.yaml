@@ -1,5 +1,5 @@
 # ddp.yaml
-devices: 2                # 2 GPUs for distributed training
+devices: 2             # 2 GPUs for distributed training
 accelerator: gpu
 strategy: ddp_find_unused_parameters_true
 max_epochs: 1001

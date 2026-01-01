@@ -18,14 +18,14 @@ probe:
   max_epochs: 100            # probe training epochs (keep small)
   lr: 0.001
   weight_decay: 0.0
-  max_train_batches: 200   # cap for speed (debug-friendly)
-  max_val_batches: 50
+  max_train_batches: 20   # cap for speed (debug-friendly)
+  max_val_batches: 5
   batch_size: 256
 
 
 cdnv:
   every_n_epochs: 100
-  max_train_batches: 200
-  max_val_batches: 50
+  max_train_batches: 20
+  max_val_batches: 5
   num_classes: 100  
   enabled: true

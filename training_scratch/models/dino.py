@@ -221,10 +221,10 @@ class LightlyDINO(pl.LightningModule):
 
         # Calculate current global step
         total_steps = (
-            self.cfg.trainer.max_epochs * len(self.trainer.train_dataloader())
+            self.cfg.trainer.max_epochs * len(self.trainer.train_dataloader)
         )
         global_step = (
-            self.current_epoch * len(self.trainer.train_dataloader()) + batch_idx
+            self.current_epoch * len(self.trainer.train_dataloader) + batch_idx
         )
 
         # Temperature schedule for teacher
@@ -299,10 +299,10 @@ class LightlyDINO(pl.LightningModule):
     def on_train_batch_end(self, outputs, batch, batch_idx):
         """Update teacher network via momentum encoding after each batch."""
         total_steps = (
-            self.cfg.trainer.max_epochs * len(self.trainer.train_dataloader())
+            self.cfg.trainer.max_epochs * len(self.trainer.train_dataloader)
         )
         global_step = (
-            self.current_epoch * len(self.trainer.train_dataloader()) + batch_idx
+            self.current_epoch * len(self.trainer.train_dataloader) + batch_idx
         )
 
         # Momentum schedule

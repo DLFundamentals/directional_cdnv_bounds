@@ -69,7 +69,7 @@ def main(cfg: DictConfig):
     cdnv_cb = CDNVCallback(**cfg.cdnv)
     
     # reconstruction callback (only for MAE)
-    callbacks = [sched_cb, probe_cb, cdnv_cb]
+    callbacks = [sched_cb, probe_cb]
     if cfg.method.name.lower() == "mae" and cfg.viz.enabled:
         viz_cb = MAEReconCallback(**cfg.viz)
         callbacks.append(viz_cb)

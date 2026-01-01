@@ -130,33 +130,29 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         return self._collate(batch, train=False)
 
     def train_dataloader(self):
-        is_ddp = torch.distributed.is_available() and torch.distributed.is_initialized()
-        sampler = DistributedSampler(self.ds_train, shuffle=True) if is_ddp else None
-        # Disable persistent_workers in DDP to avoid hanging
-        use_persistent = (self.cfg.num_workers > 0) and not is_ddp
         kwargs = dict(
             batch_size=self.cfg.batch_size,
-            shuffle=(sampler is None),
-            sampler=sampler,
+            shuffle=True,  
             num_workers=self.cfg.num_workers,
             pin_memory=True,
-            persistent_workers=use_persistent,
+            persistent_workers=(self.cfg.num_workers > 0 and not (
+                torch.distributed.is_available() and torch.distributed.is_initialized()
+            )),
             drop_last=True,
             collate_fn=self.train_collate,
         )
-        # Optional, but usually helps
         if self.cfg.num_workers > 0:
             kwargs["prefetch_factor"] = 2
         return DataLoader(self.ds_train, **kwargs)
 
     def val_dataloader(self):
+        # Let Lightning’s `use_distributed_sampler=True` create the sampler in DDP.
         is_ddp = torch.distributed.is_available() and torch.distributed.is_initialized()
-        sampler = DistributedSampler(self.ds_test, shuffle=False) if is_ddp else None
         use_persistent = (self.cfg.num_workers > 0) and not is_ddp
+
         kwargs = dict(
             batch_size=self.cfg.batch_size,
-            shuffle=False,
-            sampler=sampler,
+            shuffle=False,  # Lightning will override with a DistributedSampler in DDP
             num_workers=self.cfg.num_workers,
             pin_memory=True,
             persistent_workers=use_persistent,
@@ -165,8 +161,9 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         )
         if self.cfg.num_workers > 0:
             kwargs["prefetch_factor"] = 2
+
         return DataLoader(self.ds_test, **kwargs)
-    
+
     def test_dataloader(self):
         return DataLoader(
             self.ds_test,
