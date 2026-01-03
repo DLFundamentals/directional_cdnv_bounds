@@ -1,5 +1,5 @@
 import torch
-import torch.nn. functional as F
+import torch.nn.functional as F
 import pytorch_lightning as pl
 import sys
 import os
@@ -89,7 +89,7 @@ class CDNVCallback(pl. Callback):
     def on_train_epoch_end(
         self, trainer: pl. Trainer, pl_module: pl. LightningModule
     ):
-        if not self.enabled or not trainer. is_global_zero:
+        if not self.enabled:
             return
 
         epoch = trainer.current_epoch + 1
@@ -101,11 +101,19 @@ class CDNVCallback(pl. Callback):
                 return
 
         dm = trainer.datamodule
-        if dm is None: 
+        if dm is None:
+            return
+
+        # Synchronize all ranks before running the expensive CDNV computation on rank 0.
+        if trainer.strategy is not None:
+            trainer.strategy.barrier()
+        if not trainer.is_global_zero:
+            if trainer.strategy is not None:
+                trainer.strategy.barrier()
             return
 
         # IMPORTANT: preserve mode and set eval for stable features
-        was_training = pl_module. training
+        was_training = pl_module.training
         pl_module.eval()
 
         try:
@@ -116,11 +124,11 @@ class CDNVCallback(pl. Callback):
             if self.evaluator is None:
                 self.evaluator = GeometricEvaluator(
                     num_classes=self.num_classes,
-                    device=device
+                    device=device,
                 )
 
             if self.compute_on_train:
-                train_loader = dm. train_dataloader()
+                train_loader = dm.probe_train_dataloader() if hasattr(dm, "probe_train_dataloader") else dm.train_dataloader()
                 Xtr, Ytr = self.extract_features(
                     train_loader, backbone, device, max_batches=self.max_train_batches
                 )
@@ -134,7 +142,7 @@ class CDNVCallback(pl. Callback):
                         train_cdnv,
                         on_step=False,
                         on_epoch=True,
-                        sync_dist=True,
+                        sync_dist=False,
                     )
                     pl_module.print(f"[CDNV] epoch={epoch} train_cdnv={train_cdnv:.6f}")
 
@@ -144,16 +152,14 @@ class CDNVCallback(pl. Callback):
                         train_dir_cdnv,
                         on_step=False,
                         on_epoch=True,
-                        sync_dist=True,
+                        sync_dist=False,
                     )
-                    pl_module.print(
-                        f"[CDNV] epoch={epoch} train_dir_cdnv={train_dir_cdnv:.6f}"
-                    )
+                    pl_module.print(f"[CDNV] epoch={epoch} train_dir_cdnv={train_dir_cdnv:.6f}")
 
             if self.compute_on_val:
-                val_loader = dm.val_dataloader()
+                val_loader = dm.probe_test_dataloader() if hasattr(dm, "probe_test_dataloader") else dm.val_dataloader()
                 Xva, Yva = self.extract_features(
-                    val_loader, backbone, device, max_batches=self. max_val_batches
+                    val_loader, backbone, device, max_batches=self.max_val_batches
                 )
 
                 val_cdnv = self.evaluator.compute_cdnv(Xva, Yva)
@@ -165,7 +171,7 @@ class CDNVCallback(pl. Callback):
                         val_cdnv,
                         on_step=False,
                         on_epoch=True,
-                        sync_dist=True,
+                        sync_dist=False,
                     )
                     pl_module.print(f"[CDNV] epoch={epoch} val_cdnv={val_cdnv:.6f}")
 
@@ -175,12 +181,13 @@ class CDNVCallback(pl. Callback):
                         val_dir_cdnv,
                         on_step=False,
                         on_epoch=True,
-                        sync_dist=True,
+                        sync_dist=False,
                     )
-                    pl_module.print(
-                        f"[CDNV] epoch={epoch} val_dir_cdnv={val_dir_cdnv:.6f}"
-                    )
+                    pl_module.print(f"[CDNV] epoch={epoch} val_dir_cdnv={val_dir_cdnv:.6f}")
 
         finally:
             if was_training:
                 pl_module.train()
+            # signal completion to other ranks
+            if trainer.strategy is not None:
+                trainer.strategy.barrier()

@@ -46,7 +46,7 @@ class LinearProbeCallback(pl.Callback):
         return out
 
     def on_train_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
-        if not self.enabled or not trainer.is_global_zero:
+        if not self.enabled:
             return
 
         epoch = trainer.current_epoch + 1
@@ -57,13 +57,22 @@ class LinearProbeCallback(pl.Callback):
         if dm is None:
             return
 
+        # Synchronize all ranks before running the expensive probe on rank 0.
+        if trainer.strategy is not None:
+            trainer.strategy.barrier()
+        if not trainer.is_global_zero:
+            if trainer.strategy is not None:
+                trainer.strategy.barrier()
+            return
+
         # IMPORTANT: preserve mode and set eval for stable features
         was_training = pl_module.training
         pl_module.eval()
 
         try:
-            train_loader = dm.train_dataloader()
-            val_loader = dm.val_dataloader()
+            # Prefer explicit probe dataloaders if provided by the datamodule
+            train_loader = dm.probe_train_dataloader() if hasattr(dm, "probe_train_dataloader") else dm.train_dataloader()
+            val_loader = dm.probe_test_dataloader() if hasattr(dm, "probe_test_dataloader") else dm.val_dataloader()
             device = pl_module.device
 
             # num classes
@@ -128,10 +137,10 @@ class LinearProbeCallback(pl.Callback):
 
             val_acc, val_loss = run_epoch_cached(val_dl, train=False)
 
-            pl_module.log("probe/train_acc", train_acc, on_step=False, on_epoch=True, sync_dist=True)
-            pl_module.log("probe/train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=True)
-            pl_module.log("probe/val_acc", val_acc, on_step=False, on_epoch=True, sync_dist=True)
-            pl_module.log("probe/val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=True)
+            pl_module.log("probe/train_acc", train_acc, on_step=False, on_epoch=True, sync_dist=False)
+            pl_module.log("probe/train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=False)
+            pl_module.log("probe/val_acc", val_acc, on_step=False, on_epoch=True, sync_dist=False)
+            pl_module.log("probe/val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=False)
 
             pl_module.print(f"[LinearProbe] epoch={epoch} train_acc={train_acc:.4f} val_acc={val_acc:.4f}")
 
@@ -139,6 +148,9 @@ class LinearProbeCallback(pl.Callback):
             # restore the exact previous mode
             if was_training:
                 pl_module.train()
+            # signal completion to other ranks
+            if trainer.strategy is not None:
+                trainer.strategy.barrier()
 
 
     def extract_features(self, loader, backbone, device, max_batches=999999):
