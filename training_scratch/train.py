@@ -4,6 +4,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 import wandb
+import faulthandler, signal
 
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -51,16 +52,32 @@ def main(cfg: DictConfig):
         late_every=cfg.ckpt_schedule.late_every,
         save_last=cfg.ckpt_schedule.save_last,
     )
-    if cfg.logging.backend == "wandb":
-        logger = WandbLogger(
-            project=cfg.logging.project,
-            # entity=cfg.logging.entity,
-            name=cfg.logging.run_name,
-            log_model=cfg.logging.log_model,
-            tags=list(cfg.logging.tags)
-        )                       
+    # Instantiate logger only on rank 0 to avoid hangs when running under DDP.
+    # Check several common environment variables that indicate rank.
+    def _is_rank0():
+        for k in ("PL_GLOBAL_RANK", "GLOBAL_RANK", "RANK", "LOCAL_RANK", "SLURM_PROCID", "OMPI_COMM_WORLD_RANK"):
+            v = os.environ.get(k)
+            if v is not None:
+                try:
+                    return int(v) == 0
+                except Exception:
+                    continue
+        # If none are set, assume single-process (rank 0)
+        return True
+
+    if _is_rank0():
+        if cfg.logging.backend == "wandb":
+            logger = WandbLogger(
+                project=cfg.logging.project,
+                # entity=cfg.logging.entity,
+                name=cfg.logging.run_name,
+                log_model=cfg.logging.log_model,
+                tags=list(cfg.logging.tags)
+            )
+        else:
+            logger = CSVLogger(save_dir=cfg.paths.exp_dir, name="logs")
     else:
-        logger = CSVLogger(save_dir=cfg.paths.exp_dir, name="logs")
+        logger = None
 
     # linear probe callback
     probe_cb = LinearProbeCallback(**cfg.probe)
@@ -69,17 +86,27 @@ def main(cfg: DictConfig):
     cdnv_cb = CDNVCallback(**cfg.cdnv)
     
     # reconstruction callback (only for MAE)
-    callbacks = [sched_cb, probe_cb]
+    callbacks = [sched_cb, probe_cb, cdnv_cb]
     if cfg.method.name.lower() == "mae" and cfg.viz.enabled:
         viz_cb = MAEReconCallback(**cfg.viz)
         callbacks.append(viz_cb)
     
+    print("=== Callbacks configured ===")
+    for cb in callbacks:
+        print(type(cb))
+    print("============================")
     # trainer
+    # Normalize strategy: if using plain 'ddp', enable find_unused_parameters to
+    # avoid errors when some model parameters (e.g., frozen teacher) are unused.
+    strategy = cfg.trainer.strategy if "strategy" in cfg.trainer else None
+    if isinstance(strategy, str) and strategy == "ddp":
+        strategy = "ddp_find_unused_parameters_true"
+
     trainer = pl.Trainer(
         default_root_dir=cfg.paths.exp_dir,
         devices=cfg.trainer.devices,
         accelerator=cfg.trainer.accelerator,
-        strategy=cfg.trainer.strategy,
+        strategy=strategy,
         max_epochs=cfg.trainer.max_epochs,
         use_distributed_sampler=cfg.trainer.use_distributed_sampler if "use_distributed_sampler" in cfg.trainer else False,
         log_every_n_steps=cfg.logging.log_every_n_steps,
