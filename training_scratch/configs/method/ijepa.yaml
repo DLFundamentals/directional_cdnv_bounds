@@ -1,0 +1,22 @@
+# @package _global_
+
+method:
+  name: "ijepa"
+  model:
+    encoder_type: vit_b          
+    image_size: ${data.img_size} 
+    patch_size: 14              
+    hidden_size: 768
+    num_hidden_layers: 12
+    num_attention_heads: 12
+    intermediate_size: 3072
+    num_channels: 3
+    qkv_bias: true
+    hidden_act: gelu
+
+logging:
+  run_name: ijepa_vitB_mini
+  tags:
+    - ijepa
+    - vit-b
+    - mini-imagenet

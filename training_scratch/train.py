@@ -6,12 +6,14 @@ from pytorch_lightning.loggers import CSVLogger, WandbLogger
 import wandb
 import faulthandler, signal
 
+
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.mae import LightlyMAE
 from models.vicreg import LightlyVICReg
 from models.dino import LightlyDINO
+from models.ijepa import LightlyIJepa
 from data.mini_imagenet_datamodule import MiniImageNetDataModule, MiniImageNetCfg
 from utils.export_teacher import export_teacher_encoder_only
 from utils.ckpt_schedule import ScheduledCheckpoint
@@ -22,7 +24,7 @@ from utils.mae_recon_callback import MAEReconCallback
 @hydra.main(
     version_base=None,
     config_path="./configs",
-    config_name="exp/dino_vitB_mini.yaml",
+    config_name="exp/ijepa_vitB_mini.yaml",
 )
 def main(cfg: DictConfig):
 
@@ -41,6 +43,8 @@ def main(cfg: DictConfig):
         model = LightlyVICReg(cfg)
     elif cfg.method.name.lower() == "dino":
         model = LightlyDINO(cfg)
+    elif cfg.method.name.lower() == "ijepa":
+        model = LightlyIJepa(cfg)
     else:
         raise ValueError(f"Unknown method: {cfg.method.name}. Supported: 'mae', 'vicreg', 'dino'")
 
