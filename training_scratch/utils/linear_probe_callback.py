@@ -13,7 +13,8 @@ class LinearProbeCallback(pl.Callback):
       - log val accuracy to W&B/CSV
     """
     def __init__(self, every_n_epochs=100, max_epochs=5, lr=0.1, weight_decay=0.0,
-                 max_train_batches=200, max_val_batches=50, batch_size=256, enabled=True):
+                 max_train_batches=200, max_val_batches=50, batch_size=256,
+                 enabled=True, run_before_training=True):
         self.every_n_epochs = every_n_epochs
         self.max_epochs = max_epochs
         self.lr = lr
@@ -22,6 +23,7 @@ class LinearProbeCallback(pl.Callback):
         self.max_val_batches = max_val_batches
         self.batch_size = batch_size
         self.enabled = enabled
+        self.run_before_training = run_before_training
 
     @staticmethod
     def _cls_features(backbone, images):
@@ -44,15 +46,25 @@ class LinearProbeCallback(pl.Callback):
         if out.dim() > 2:
             out = torch.flatten(out, 1)
         return out
+    
+    # ---------- run once before training ----------
+    def on_train_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
+        if not (self.enabled and self.run_before_training):
+            return
+        # "epoch 0 probe" before any optimizer steps
+        self._run_probe(trainer, pl_module, epoch_to_log=0)
 
     def on_train_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
         if not self.enabled:
             return
 
-        epoch = trainer.current_epoch + 1
-        if epoch % self.every_n_epochs != 0:
+        epoch_to_log = trainer.current_epoch + 1  # end-of-epoch numbering
+        if epoch_to_log % self.every_n_epochs != 0:
             return
 
+        self._run_probe(trainer, pl_module, epoch_to_log=epoch_to_log)
+
+    def _run_probe(self, trainer: pl.Trainer, pl_module: pl.LightningModule, epoch_to_log: int):
         dm = trainer.datamodule
         if dm is None:
             return
@@ -142,7 +154,7 @@ class LinearProbeCallback(pl.Callback):
             pl_module.log("probe/val_acc", val_acc, on_step=False, on_epoch=True, sync_dist=False)
             pl_module.log("probe/val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=False)
 
-            pl_module.print(f"[LinearProbe] epoch={epoch} train_acc={train_acc:.4f} val_acc={val_acc:.4f}")
+            trainer.print(f"[LinearProbe] epoch={epoch_to_log} train_acc={train_acc:.4f} val_acc={val_acc:.4f}")
 
         finally:
             # restore the exact previous mode
