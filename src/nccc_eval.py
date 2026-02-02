@@ -76,7 +76,7 @@ def main(args):
             'model_size': config['model'].get('model_size', 'base'),
             'patch_size': config['model'].get('patch_size', 16)
         }
-    elif method == 'dinov3':
+    elif method == 'dinov2':
         kwargs = {
             'encoder_type': config['model'].get('encoder_type', 'vit_s'),
             'patch_size': config['model'].get('patch_size', 16)
