@@ -1,4 +1,4 @@
-from data_utils.augmentations_hub import simclr, mae, clip, ijepa, vicreg, siglip, dinov2
+from data_utils.augmentations_hub import simclr, mae, clip, ijepa, vicreg, siglip
 
 AUGMENTATION_REGISTRY = {
     'simclr': simclr.get_simclr_transforms,
@@ -7,7 +7,6 @@ AUGMENTATION_REGISTRY = {
     'clip': clip.get_clip_transforms,
     'siglip': siglip.get_siglip_transforms,
     'vicreg': vicreg.get_vicreg_transforms,
-    'dinov3': dinov3.get_dinov2_transforms
 
 }
 

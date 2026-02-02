@@ -76,11 +76,6 @@ def main(args):
             'model_size': config['model'].get('model_size', 'base'),
             'patch_size': config['model'].get('patch_size', 16)
         }
-    elif method == 'dinov2':
-        kwargs = {
-            'encoder_type': config['model'].get('encoder_type', 'vit_s'),
-            'patch_size': config['model'].get('patch_size', 16)
-        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],
