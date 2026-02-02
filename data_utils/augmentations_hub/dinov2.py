@@ -2,7 +2,7 @@ import torch
 from torchvision import transforms
 from data_utils.augmentations_hub.common_transforms import RepeatChannelsIfNeeded
 
-def get_dinov3_transforms(dataset: str = 'imagenet'):
+def get_dinov2_transforms(dataset: str = 'imagenet'):
     """
     Returns siglip specific data augmentation (train) and basic evaluation transforms for a given dataset.
     """
