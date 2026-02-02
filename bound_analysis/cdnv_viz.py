@@ -264,7 +264,7 @@ def plot_cdnv(
     plt.show()
 
 
-def plot_cdnv_from_csv(csv_path, output_path, figsize=(14, 11), show_corr=True):
+def plot_cdnv(csv_path, output_path, figsize=(14, 11), show_corr=True):
     """Convenience wrapper: load from CSV and plot."""
 
     (
@@ -287,7 +287,7 @@ def plot_cdnv_from_csv(csv_path, output_path, figsize=(14, 11), show_corr=True):
     )
 
 
-def plot_cdnv_from_two_csvs(
+def plot_hierarchial_cdnv(
     csv_path_1,
     csv_path_2,
     output_path=None,
