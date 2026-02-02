@@ -1,5 +1,5 @@
-experiment_name: "dinov3/mini_imagenet"
-method_type: "dinov3"
+experiment_name: "dinov2/mini_imagenet"
+method_type: "dinov2"
 
 dataset:
   name: "mini_imagenet"
