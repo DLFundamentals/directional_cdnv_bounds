@@ -1,28 +1,28 @@
 import torch
 import torch.nn as nn
-from transformers import AutoModel, AutoImageProcessor, Dinov2Config  # Use Dinov2Config for DINOv3
+from transformers import AutoModel, AutoImageProcessor, Dinov2Config  # Use Dinov2Config for DINOv2
 
-class Dinov3Adapter(nn.Module):
-    def __init__(self, dinov3_model, processor):
+class Dinov2Adapter(nn.Module):
+    def __init__(self, dinov2_model, processor):
         super().__init__()
-        self.dinov3_model = dinov3_model
+        self.dinov2_model = dinov2_model
         self.processor = processor
-        hidden_size = dinov3_model.config.hidden_size
+        hidden_size = dinov2_model.config.hidden_size
     
     def forward(self, x):
         processed = self.processor(x, return_tensors="pt", do_rescale=False)
         
-        outputs = self.dinov3_model(processed['pixel_values'].to(x.device))
+        outputs = self.dinov2_model(processed['pixel_values'].to(x.device))
         
         h = outputs.last_hidden_state[:, 0]
         
         return h, None
 
-def create_dinov3_model(dataset: str,
+def create_dinov2_model(dataset: str,
                         encoder_type: str = 'vit_s',
                         patch_size: int = 16):
     """
-    Create a DINOv3 model for the specified dataset and configuration.
+    Create a DINOv2 model for the specified dataset and configuration.
     
     Args:
         dataset: Dataset name (e.g., 'imagenet', 'mini_imagenet', 'cifar10', 'cifar100')
@@ -30,7 +30,7 @@ def create_dinov3_model(dataset: str,
         patch_size: Patch size (14 or 16)
     
     Returns:
-        DINOv3 model
+        DINOv2 model
     """
     if dataset in ['imagenet', 'mini_imagenet']:
         model_name = _get_pretrained_model_name(encoder_type, patch_size)
@@ -68,13 +68,13 @@ def _get_pretrained_model_name(encoder_type: str, patch_size: int) -> str:
     encoder_type = encoder_type.lower()
     
     model_mapping = {
-        ('vit_s', 14): "facebook/dinov3-vits14-pretrain-lvd1689m",
-        ('vit_s', 16): "facebook/dinov3-vits16-pretrain-lvd1689m",
-        ('vit_b', 14): "facebook/dinov3-vitb14-pretrain-lvd1689m",
-        ('vit_b', 16): "facebook/dinov3-vitb16-pretrain-lvd1689m",
-        ('vit_l', 14): "facebook/dinov3-vitl14-pretrain-lvd1689m",
-        ('vit_l', 16): "facebook/dinov3-vitl16-pretrain-lvd1689m",
-        ('vit_g', 14): "facebook/dinov3-vitg14-pretrain-lvd1689m",
+        ('vit_s', 14): "facebook/dinov2-vits14-pretrain-lvd1689m",
+        ('vit_s', 16): "facebook/dinov2-vits16-pretrain-lvd1689m",
+        ('vit_b', 14): "facebook/dinov2-vitb14-pretrain-lvd1689m",
+        ('vit_b', 16): "facebook/dinov2-vitb16-pretrain-lvd1689m",
+        ('vit_l', 14): "facebook/dinov2-vitl14-pretrain-lvd1689m",
+        ('vit_l', 16): "facebook/dinov2-vitl16-pretrain-lvd1689m",
+        ('vit_g', 14): "facebook/dinov2-vitg14-pretrain-lvd1689m",
     }
     
     key = (encoder_type, patch_size)
@@ -86,9 +86,9 @@ def _get_pretrained_model_name(encoder_type: str, patch_size: int) -> str:
     
     return model_mapping[key]
 
-def create_dinov3_adapter(dataset: str, **kwargs):
+def create_dinov2_adapter(dataset: str, **kwargs):
     """
-    Create a DINOv3 adapter for SSL training.
+    Create a DINOv2 adapter for SSL training.
     
     Args:
         dataset: Dataset name
@@ -97,17 +97,17 @@ def create_dinov3_adapter(dataset: str, **kwargs):
             - patch_size: Patch size (default: 16)
     
     Returns:
-        Dinov3Adapter instance
+        Dinov2Adapter instance
     """
     encoder_type = kwargs.get('encoder_type', 'vit_s')
     patch_size = kwargs.get('patch_size', 16)
     
-    model = create_dinov3_model(dataset, encoder_type, patch_size)
+    model = create_dinov2_model(dataset, encoder_type, patch_size)
     
     if dataset in ['imagenet', 'mini_imagenet']:
         model_name = _get_pretrained_model_name(encoder_type, patch_size)
         processor = AutoImageProcessor.from_pretrained(model_name)
     else:
-        processor = AutoImageProcessor.from_pretrained("facebook/dinov3-vits16-pretrain-lvd1689m")
+        processor = AutoImageProcessor.from_pretrained("facebook/dinov2-vits16-pretrain-lvd1689m")
     
-    return Dinov3Adapter(model, processor)
+    return Dinov2Adapter(model, processor)
