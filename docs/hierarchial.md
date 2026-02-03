@@ -8,4 +8,6 @@ python src/granular_cdnv.py --config <path-to-config-yaml> --ckpt_dir <checkpoin
 This shall results in `cdnv.csv` file in your output directory with respect to the 10 superclasses. 
 
 
-To plot the dynamics of training for both fine-grained and clustered classes, please refer to [cdnv_plotter.ipynb]().
+To plot the dynamics of training for both fine-grained and clustered classes, please refer to [plot_hierarchial_clustering.ipynb]().
+
+![Illustration of the hierarchial clustering experiment for VicReg](/docs/vicreg_hierarchial.png)
