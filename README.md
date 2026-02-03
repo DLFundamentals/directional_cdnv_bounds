@@ -90,8 +90,8 @@ This will produce `train_pairwise_metrics.json` and `test_pairwise_metrics.json`
 Once the above metrics are available, you can compute the final error bounds by following the instructions in the [error_bounds.ipynb](notebooks/error_bounds.ipynb) notebook. We have shown an example of the final error bound visualization for the MAE and DINOv2 model below:
 
 <p align="center">
-  <img src="git_figures/error_bounds.png" width="420" />
-  <img src="git_figures/dino_error_bound.png" width="420" />
+  <img src="git_figures/error_bounds.png" width="320" />
+  <img src="git_figures/dino_error_bound.png" width="320" />
 </p>
 
 <p align="center">
