@@ -57,18 +57,56 @@ This shall result in `cdnv.csv` file in your output directory.
 
 ## New generalization bound evaluation
 
-While our bound correctly targets the decision-axis variance, it can be loose at practical values of $m$.
+While our previous bound correctly targets the decision-axis variance, it can be loose at practical values of $m$. To get meaningful guarantees when representations are anisotropic, we study the pairwise margin between classes. Our bound (i) cleanly separates the decision direction, (ii) accounts for finite-sample effects, and (iii) remains valid even when the feature distribution has heavy tails.
 
 
-## Pairwise geometric metrics for new error bound
+### Computing pairwise geometric metrics for new error bound
+
+The new bound depends on pairwise geometric statistics between classes, such as:
+- squared distance between class means,
+- normalized within-class variance,
+- variance along the decision direction,
+- and a fourth-moment (tail) correction.
+
+These metrics are computed using the `GeometricEvaluator` class in [src/bound_eval.py](src/bound_eval.py). To compute these metrics, run the following command:
 
 ```python
-python src/bound_eval.py --config <path-to-config-yaml> --ckpt_path <checkpoints_dir or checkpoints_file> --output_path <output-dir>
+python src/bound_eval.py \
+--config <path-to-config-yaml> \
+--ckpt_path <checkpoints_dir or checkpoints_file> \
+--output_path <output-dir>
 ```
 
-This shall results in `train_pairwise_metrics.json` and `test_pairwise_metrics.json` files in your output directory.
+This will produce `train_pairwise_metrics.json` and `test_pairwise_metrics.json` files in your output directory.
 
 
-## Producing plots
+### Computing the final error bounds
 
-Please refer to [error_bounds.ipynb](https://github.com/DLFundamentals/directional_cdnv_bounds/blob/main/notebooks/error_bounds.ipynb) notebook where you will need to provide correct path to the metrics generated in the above three steps.
+Once the above metrics are available, you can compute the final error bounds by following the instructions in the [error_bounds.ipynb](notebooks/error_bounds.ipynb) notebook.
+
+This function implements the new error bound from Thm. 4.1 by:
+- combining decision-axis variance, finite-sample noise, and higher-order terms,
+- and averaging across the selected classes.
+
+```
+compute_new_error_bound(pairwise_metrics, m, sel_classes)
+```
+
+This function implements the old error bound from our previous work.
+
+```
+compute_old_error_bound(alpha: float, beta: float, m: int)
+"""
+Args:
+        alpha (float): Directional CDNV
+        beta (float): CDNV
+        m (int): Number of shots per class
+"""
+```
+
+## Citation
+If you find our work useful in your research, please consider citing the following paper:
+
+```bibtex
+TODO
+```
