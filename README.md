@@ -29,11 +29,10 @@ Empirically, across SSL objectives, directional CDNV collapses during pretrainin
 # Theorem 4.1. Multiclass generalization bound
 
 In our [previous work](https://openreview.net/forum?id=mf4V1SK0np), we showed that for any $a \geq 5$,
-$$
-\text{err}^{\texttt{NCC}}_{m, C}(f) \leq (C'-1)\Bigg[
+
+$$ \text{err}^{\texttt{NCC}}_{m, C}(f) \leq (C'-1)\Bigg[
 \Big(\tfrac12-\tfrac{2}{a}-\tfrac{2^{3/2}}{am}\Big)^{-2}\tilde V_f +\tfrac{a}{4}\Big(\tfrac{2}{\sqrt m}(V_f^{s}+V_f)+\tfrac{1}{m}V_f\Big)
-\Bigg]
-$$
+\Bigg] $$
 
 To verify the above bound for different values of $m$ and $C$, we provide the following evaluation scripts: [nccc_eval.py](src/nccc_eval.py), [cdnv_eval.py](src/cdnv_eval.py), and [old_bound_core.py](bound_analysis/old_bound_core.py). Please follow the instructions below to evaluate the metrics required to verify the theorem.
 
