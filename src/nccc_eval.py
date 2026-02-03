@@ -123,7 +123,7 @@ def main(args):
     }
 
     os.makedirs(args.output_path, exist_ok=True)
-    csv_path = os.path.join(args.output_path, "results.csv")
+    csv_path = os.path.join(args.output_path, "nccc.csv")
 
     df = pd.DataFrame([row])
     if not os.path.exists(csv_path):
