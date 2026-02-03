@@ -209,7 +209,7 @@ def main():
     parser = argparse.ArgumentParser(description='Batch CDNV evaluation across checkpoints')
     parser.add_argument(
         '--ckpt_dir',
-        default="/home/yashsalunkhe619/directional_cdnv_bounds/checkpoints/vitB_dino_mini/checkpoints",
+        default=f"/home/$USER/directional_cdnv_bounds/checkpoints/$EXP_NAME/checkpoints",
         help='Directory containing checkpoint files'
     )
     parser.add_argument('--out_csv', default='dino_gran.csv', help='Output CSV file path')
