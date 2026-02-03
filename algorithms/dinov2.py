@@ -68,13 +68,13 @@ def _get_pretrained_model_name(encoder_type: str, patch_size: int) -> str:
     encoder_type = encoder_type.lower()
     
     model_mapping = {
-        ('vit_s', 14): "facebook/dinov2-vits14-pretrain-lvd1689m",
-        ('vit_s', 16): "facebook/dinov2-vits16-pretrain-lvd1689m",
-        ('vit_b', 14): "facebook/dinov2-vitb14-pretrain-lvd1689m",
-        ('vit_b', 16): "facebook/dinov2-vitb16-pretrain-lvd1689m",
-        ('vit_l', 14): "facebook/dinov2-vitl14-pretrain-lvd1689m",
-        ('vit_l', 16): "facebook/dinov2-vitl16-pretrain-lvd1689m",
-        ('vit_g', 14): "facebook/dinov2-vitg14-pretrain-lvd1689m",
+        ('vit_s', 14): "facebook/dinov3-vits14-pretrain-lvd1689m",
+        ('vit_s', 16): "facebook/dinov3-vits16-pretrain-lvd1689m",
+        ('vit_b', 14): "facebook/dinov3-vitb14-pretrain-lvd1689m",
+        ('vit_b', 16): "facebook/dinov3-vitb16-pretrain-lvd1689m",
+        ('vit_l', 14): "facebook/dinov3-vitl14-pretrain-lvd1689m",
+        ('vit_l', 16): "facebook/dinov3-vitl16-pretrain-lvd1689m",
+        ('vit_g', 14): "facebook/dinov3-vitg14-pretrain-lvd1689m",
     }
     
     key = (encoder_type, patch_size)
@@ -108,6 +108,6 @@ def create_dinov2_adapter(dataset: str, **kwargs):
         model_name = _get_pretrained_model_name(encoder_type, patch_size)
         processor = AutoImageProcessor.from_pretrained(model_name)
     else:
-        processor = AutoImageProcessor.from_pretrained("facebook/dinov2-vits16-pretrain-lvd1689m")
+        processor = AutoImageProcessor.from_pretrained("facebook/dinov3-vits16-pretrain-lvd1689m")
     
     return Dinov2Adapter(model, processor)
