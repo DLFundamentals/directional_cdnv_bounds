@@ -14,7 +14,6 @@ We acknowledge the public availability of the following repositories, which we h
     - [DINOv2](https://huggingface.co/facebook/dinov2-base)
     - [CLIP](https://huggingface.co/openai/clip-vit-base-patch32)
     - [SigLIP](https://huggingface.co/google/siglip-base-patch16-224)
-- [PyTorch](https://pytorch.org/) for deep learning framework
 - [Timm](https://github.com/rwightman/pytorch-image-models) for vision models and datasets
 
 ## Abstract
@@ -41,7 +40,11 @@ To verify the above bound for different values of $m$ and $C$, we provide the fo
 ### NCCC evaluation
 
 ```python
-python src/nccc_eval.py --config <path-to-config-yaml> --ckpt_path <checkpoints_dir or checkpoints_file> --output_path <output-dir>
+python src/nccc_eval.py \
+--config <path-to-config-yaml> \
+--ckpt_path <checkpoints_dir or checkpoints_file> \
+--output_path <output-dir> \
+--repeat <num-repeats>
 ```
 
 This shall result in `nccc.csv` file in your output directory. 
@@ -49,7 +52,10 @@ This shall result in `nccc.csv` file in your output directory.
 ### CDNV evaluation
 
 ```python
-python src/cdnv_eval.py --config <path-to-config-yaml> --ckpt_path <checkpoints_dir or checkpoints_file> --output_path <output-dir>
+python src/cdnv_eval.py \
+--config <path-to-config-yaml> \
+--ckpt_path <checkpoints_dir or checkpoints_file> \
+--output_path <output-dir>
 ```
 
 This shall result in `cdnv.csv` file in your output directory.

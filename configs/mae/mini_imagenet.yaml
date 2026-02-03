@@ -2,8 +2,8 @@
   method_type: "mae"
   supervision: "SSL"
   dataset:
-    name: "imagenet"
-    path: "./data/"
+    name: "mini_imagenet"
+    path: "./.hf_datasets_cache"
     num_output_classes: 100
   training:
     batch_size: 896

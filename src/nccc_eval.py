@@ -97,7 +97,6 @@ def main(args):
     test_features, test_labels = ssl_extractor.extract_features(test_loader)
 
     # initialize evaluator
-    # TODO: make n_shot, repeat, selected_classes configurable
     embedding_layer = 0 # 0 for h, 1 for g(h)
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
