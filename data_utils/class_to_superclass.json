@@ -1,0 +1,602 @@
+{
+  "n01532829": {
+    "class_name": "house_finch",
+    "superclass_name": "birds",
+    "superclass_id": 0,
+    "original_index": 0
+  },
+  "n01558993": {
+    "class_name": "robin",
+    "superclass_name": "birds",
+    "superclass_id": 0,
+    "original_index": 1
+  },
+  "n01704323": {
+    "class_name": "triceratops",
+    "superclass_name": "reptiles_dinosaurs",
+    "superclass_id": 1,
+    "original_index": 2
+  },
+  "n01749939": {
+    "class_name": "green_mamba",
+    "superclass_name": "reptiles_dinosaurs",
+    "superclass_id": 1,
+    "original_index": 3
+  },
+  "n01770081": {
+    "class_name": "harvestman",
+    "superclass_name": "invertebrates",
+    "superclass_id": 2,
+    "original_index": 4
+  },
+  "n01843383": {
+    "class_name": "toucan",
+    "superclass_name": "birds",
+    "superclass_id": 0,
+    "original_index": 5
+  },
+  "n01855672": {
+    "class_name": "goose",
+    "superclass_name": "birds",
+    "superclass_id": 0,
+    "original_index": 6
+  },
+  "n01910747": {
+    "class_name": "jellyfish",
+    "superclass_name": "marine_life",
+    "superclass_id": 3,
+    "original_index": 7
+  },
+  "n01930112": {
+    "class_name": "nematode",
+    "superclass_name": "marine_life",
+    "superclass_id": 3,
+    "original_index": 8
+  },
+  "n01981276": {
+    "class_name": "king_crab",
+    "superclass_name": "marine_life",
+    "superclass_id": 3,
+    "original_index": 9
+  },
+  "n02074367": {
+    "class_name": "dugong",
+    "superclass_name": "marine_life",
+    "superclass_id": 3,
+    "original_index": 10
+  },
+  "n02089867": {
+    "class_name": "Walker_hound",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 11
+  },
+  "n02091244": {
+    "class_name": "Ibizan_hound",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 12
+  },
+  "n02091831": {
+    "class_name": "Saluki",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 13
+  },
+  "n02099601": {
+    "class_name": "golden_retriever",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 14
+  },
+  "n02101006": {
+    "class_name": "Gordon_setter",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 15
+  },
+  "n02105505": {
+    "class_name": "komondor",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 16
+  },
+  "n02108089": {
+    "class_name": "boxer",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 17
+  },
+  "n02108551": {
+    "class_name": "Tibetan_mastiff",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 18
+  },
+  "n02108915": {
+    "class_name": "French_bulldog",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 19
+  },
+  "n02110063": {
+    "class_name": "malamute",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 20
+  },
+  "n02110341": {
+    "class_name": "dalmatian",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 21
+  },
+  "n02111277": {
+    "class_name": "Newfoundland",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 22
+  },
+  "n02113712": {
+    "class_name": "miniature_poodle",
+    "superclass_name": "dogs",
+    "superclass_id": 4,
+    "original_index": 23
+  },
+  "n02114548": {
+    "class_name": "white_wolf",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 24
+  },
+  "n02116738": {
+    "class_name": "African_hunting_dog",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 25
+  },
+  "n02120079": {
+    "class_name": "Arctic_fox",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 26
+  },
+  "n02129165": {
+    "class_name": "lion",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 27
+  },
+  "n02138441": {
+    "class_name": "meerkat",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 28
+  },
+  "n02165456": {
+    "class_name": "ladybug",
+    "superclass_name": "invertebrates",
+    "superclass_id": 2,
+    "original_index": 29
+  },
+  "n02174001": {
+    "class_name": "rhinoceros_beetle",
+    "superclass_name": "invertebrates",
+    "superclass_id": 2,
+    "original_index": 30
+  },
+  "n02219486": {
+    "class_name": "ant",
+    "superclass_name": "invertebrates",
+    "superclass_id": 2,
+    "original_index": 31
+  },
+  "n02443484": {
+    "class_name": "black-footed_ferret",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 32
+  },
+  "n02457408": {
+    "class_name": "three-toed_sloth",
+    "superclass_name": "wild_mammals",
+    "superclass_id": 5,
+    "original_index": 33
+  },
+  "n02606052": {
+    "class_name": "rock_beauty",
+    "superclass_name": "marine_life",
+    "superclass_id": 3,
+    "original_index": 34
+  },
+  "n02687172": {
+    "class_name": "aircraft_carrier",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 35
+  },
+  "n02747177": {
+    "class_name": "ashcan",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 36
+  },
+  "n02795169": {
+    "class_name": "barrel",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 37
+  },
+  "n02823428": {
+    "class_name": "beer_bottle",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 38
+  },
+  "n02871525": {
+    "class_name": "bookshop",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 39
+  },
+  "n02950826": {
+    "class_name": "cannon",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 40
+  },
+  "n02966193": {
+    "class_name": "carousel",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 41
+  },
+  "n02971356": {
+    "class_name": "carton",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 42
+  },
+  "n02981792": {
+    "class_name": "catamaran",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 43
+  },
+  "n03017168": {
+    "class_name": "chime",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 44
+  },
+  "n03047690": {
+    "class_name": "clog",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 45
+  },
+  "n03062245": {
+    "class_name": "cocktail_shaker",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 46
+  },
+  "n03075370": {
+    "class_name": "combination_lock",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 47
+  },
+  "n03127925": {
+    "class_name": "crate",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 48
+  },
+  "n03146219": {
+    "class_name": "cuirass",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 49
+  },
+  "n03207743": {
+    "class_name": "dishrag",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 50
+  },
+  "n03220513": {
+    "class_name": "dome",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 51
+  },
+  "n03272010": {
+    "class_name": "electric_guitar",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 52
+  },
+  "n03337140": {
+    "class_name": "file",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 53
+  },
+  "n03347037": {
+    "class_name": "fire_screen",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 54
+  },
+  "n03400231": {
+    "class_name": "frying_pan",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 55
+  },
+  "n03417042": {
+    "class_name": "garbage_truck",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 56
+  },
+  "n03476684": {
+    "class_name": "hair_slide",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 57
+  },
+  "n03527444": {
+    "class_name": "holster",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 58
+  },
+  "n03535780": {
+    "class_name": "horizontal_bar",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 59
+  },
+  "n03544143": {
+    "class_name": "hourglass",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 60
+  },
+  "n03584254": {
+    "class_name": "iPod",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 61
+  },
+  "n03676483": {
+    "class_name": "lipstick",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 62
+  },
+  "n03770439": {
+    "class_name": "miniskirt",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 63
+  },
+  "n03773504": {
+    "class_name": "missile",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 64
+  },
+  "n03775546": {
+    "class_name": "mixing_bowl",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 65
+  },
+  "n03838899": {
+    "class_name": "oboe",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 66
+  },
+  "n03854065": {
+    "class_name": "organ",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 67
+  },
+  "n03888605": {
+    "class_name": "parallel_bars",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 68
+  },
+  "n03908618": {
+    "class_name": "pencil_box",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 69
+  },
+  "n03924679": {
+    "class_name": "photocopier",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 70
+  },
+  "n03980874": {
+    "class_name": "poncho",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 71
+  },
+  "n03998194": {
+    "class_name": "prayer_rug",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 72
+  },
+  "n04067472": {
+    "class_name": "reel",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 73
+  },
+  "n04146614": {
+    "class_name": "school_bus",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 74
+  },
+  "n04149813": {
+    "class_name": "scoreboard",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 75
+  },
+  "n04243546": {
+    "class_name": "slot",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 76
+  },
+  "n04251144": {
+    "class_name": "snorkel",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 77
+  },
+  "n04258138": {
+    "class_name": "solar_dish",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 78
+  },
+  "n04275548": {
+    "class_name": "spider_web",
+    "superclass_name": "invertebrates",
+    "superclass_id": 2,
+    "original_index": 79
+  },
+  "n04296562": {
+    "class_name": "stage",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 80
+  },
+  "n04389033": {
+    "class_name": "tank",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 81
+  },
+  "n04418357": {
+    "class_name": "theater_curtain",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 82
+  },
+  "n04435653": {
+    "class_name": "tile_roof",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 83
+  },
+  "n04443257": {
+    "class_name": "tobacco_shop",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 84
+  },
+  "n04509417": {
+    "class_name": "unicycle",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 85
+  },
+  "n04515003": {
+    "class_name": "upright",
+    "superclass_name": "objects_tools",
+    "superclass_id": 7,
+    "original_index": 86
+  },
+  "n04522168": {
+    "class_name": "vase",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 87
+  },
+  "n04596742": {
+    "class_name": "wok",
+    "superclass_name": "household_wearables",
+    "superclass_id": 8,
+    "original_index": 88
+  },
+  "n04604644": {
+    "class_name": "worm_fence",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 89
+  },
+  "n04612504": {
+    "class_name": "yawl",
+    "superclass_name": "vehicles_machines",
+    "superclass_id": 6,
+    "original_index": 90
+  },
+  "n06794110": {
+    "class_name": "street_sign",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 91
+  },
+  "n07584110": {
+    "class_name": "consomme",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 92
+  },
+  "n07613480": {
+    "class_name": "trifle",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 93
+  },
+  "n07697537": {
+    "class_name": "hotdog",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 94
+  },
+  "n07747607": {
+    "class_name": "orange",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 95
+  },
+  "n09246464": {
+    "class_name": "cliff",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 96
+  },
+  "n09256479": {
+    "class_name": "coral_reef",
+    "superclass_name": "marine_life",
+    "superclass_id": 3,
+    "original_index": 97
+  },
+  "n13054560": {
+    "class_name": "bolete",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 98
+  },
+  "n13133613": {
+    "class_name": "ear",
+    "superclass_name": "scenes_structures_food",
+    "superclass_id": 9,
+    "original_index": 99
+  }
+}

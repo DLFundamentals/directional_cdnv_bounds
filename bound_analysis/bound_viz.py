@@ -116,7 +116,6 @@ def plot_error_bound(train_error, test_error,
     plt.ylabel(r"Error")
     plt.tight_layout()
 
-    if output_path:
+    if output_path is not None:
         plt.savefig(output_path, bbox_inches='tight')
-    
     plt.show()

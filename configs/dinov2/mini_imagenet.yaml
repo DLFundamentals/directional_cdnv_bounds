@@ -1,0 +1,30 @@
+experiment_name: "dinov2/mini_imagenet"
+method_type: "dinov2"
+
+dataset:
+  name: "mini_imagenet"
+  path: "./data/"
+  num_output_classes: 100
+
+model:
+  encoder_type: "vit_b"    # options: vit_s, vit_b, vit_l, vit_g
+  pretrained: true
+  patch_size: 16            # 14 or 16
+  image_size: 224
+
+evaluation:
+  checkpoints_dir: "./"
+  perform_cdnv: true
+  perform_nccc: true
+  perform_linear: true
+
+linear:
+  batch_size: 256
+  num_epochs: 100
+  num_output_classes: 100
+  augment_both: false
+  top_lr: 3e-4
+  momentum: 0.9
+  weight_decay: 5e-4
+  track_performance: true
+  save_every: 10

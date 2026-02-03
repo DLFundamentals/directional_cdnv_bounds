@@ -102,12 +102,17 @@ def main(args):
     evaluator = GeometricEvaluator(num_output_classes)
     cdnv = evaluator.compute_cdnv(train_features[embedding_layer], train_labels)
     dir_cdnv = evaluator.compute_directional_cdnv(train_features[embedding_layer], train_labels)
-    print(f"NCCC Results - CDNV: {cdnv}, Directional CDNV: {dir_cdnv}")
+    print(f"Train split - CDNV: {cdnv}, Directional CDNV: {dir_cdnv}")
+    test_cdnv = evaluator.compute_cdnv(test_features[embedding_layer], test_labels)
+    test_dir_cdnv = evaluator.compute_directional_cdnv(test_features[embedding_layer], test_labels)
+    print(f"Test split - CDNV: {test_cdnv}, Directional CDNV: {test_dir_cdnv}")
 
     # log results
     results = {
         'CDNV': [cdnv],
-        'Directional_CDNV': [dir_cdnv]
+        'Directional_CDNV': [dir_cdnv],
+        'Test_CDNV': [test_cdnv],
+        'Test_Directional_CDNV': [test_dir_cdnv]
     }
     results_df = pd.DataFrame(results)
     results_log_file = f"{args.output_path}/cdnv.csv"

@@ -76,6 +76,11 @@ def main(args):
             'model_size': config['model'].get('model_size', 'base'),
             'patch_size': config['model'].get('patch_size', 16)
         }
+    elif method == 'dinov2':
+        kwargs = {
+            'encoder_type': config['model'].get('encoder_type', 'vit_s'),
+            'patch_size': config['model'].get('patch_size', 16)
+        }
 
     ssl_model = build_ssl_model(
         method=config['method_type'],
@@ -92,7 +97,6 @@ def main(args):
     test_features, test_labels = ssl_extractor.extract_features(test_loader)
 
     # initialize evaluator
-    # TODO: make n_shot, repeat, selected_classes configurable
     embedding_layer = 0 # 0 for h, 1 for g(h)
     evaluator = NCCCEvaluator(device=device)
     centers, selected_classes = evaluator.compute_class_centers(
@@ -118,7 +122,7 @@ def main(args):
     }
 
     os.makedirs(args.output_path, exist_ok=True)
-    csv_path = os.path.join(args.output_path, "results.csv")
+    csv_path = os.path.join(args.output_path, "nccc.csv")
 
     df = pd.DataFrame([row])
     if not os.path.exists(csv_path):
