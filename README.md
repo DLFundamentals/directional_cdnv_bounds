@@ -90,6 +90,7 @@ This will produce `train_pairwise_metrics.json` and `test_pairwise_metrics.json`
 Once the above metrics are available, you can compute the final error bounds by following the instructions in the [error_bounds.ipynb](notebooks/error_bounds.ipynb) notebook. We have shown an example of the final error bound visualization for the MAE model below:
 
 <img src="git_figures/error_bounds.png" width="600">
+<img src="git_figures/dino_error_bound.png" width="600">
 
 This function implements the new error bound from Thm. 4.1 by:
 - combining decision-axis variance, finite-sample noise, and higher-order terms,
