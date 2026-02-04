@@ -35,6 +35,7 @@ def main(cfg: DictConfig):
 
     # build data module
     data_cfg = MiniImageNetCfg(**cfg.data)
+    data_cfg.method = cfg.method.name
     data_module = MiniImageNetDataModule(data_cfg)
 
     # build model based on method

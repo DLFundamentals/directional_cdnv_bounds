@@ -183,6 +183,8 @@ def main():
     
     # Build datamodule from checkpoint config
     data_cfg = MiniImageNetCfg(**cfg.data)
+    if hasattr(cfg, "method") and hasattr(cfg.method, "name"):
+        data_cfg.method = cfg.method.name
     dm = MiniImageNetDataModule(data_cfg)
     dm.setup('fit')
     

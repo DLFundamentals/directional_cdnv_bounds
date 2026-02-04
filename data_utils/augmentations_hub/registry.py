@@ -7,6 +7,7 @@ AUGMENTATION_REGISTRY = {
     'clip': clip.get_clip_transforms,
     'siglip': siglip.get_siglip_transforms,
     'vicreg': vicreg.get_vicreg_transforms,
+    'dino': dinov2.get_dinov2_transforms,
     'dinov2': dinov2.get_dinov2_transforms
 
 }
