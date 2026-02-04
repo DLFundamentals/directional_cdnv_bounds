@@ -12,11 +12,7 @@ class ScheduledCheckpoint(pl.Callback):
 
     def _ensure_dir(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
         # Make dir on rank 0, then sync so others don't race
-        enabled = pl_module.cfg.stage2.enabled
-        if enabled:
-            active_path = os.path.join(self.dirpath, "stage2")
-        else:
-            active_path = os.path.join(self.dirpath, "stage1")
+        active_path = os.path.join(self.dirpath)
         if trainer.is_global_zero:
             os.makedirs(active_path, exist_ok=True)
         if trainer.strategy is not None:

@@ -1,3 +1,8 @@
+"""
+Run this scripts as:
+python train.py --config-path /abs/path/to/configs --config-name <config-file-name>
+"""
+
 import hydra
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
@@ -21,11 +26,7 @@ from utils.linear_probe_callback import LinearProbeCallback
 from utils.cdnv_callback import CDNVCallback
 from utils.mae_recon_callback import MAEReconCallback
 
-@hydra.main(
-    version_base=None,
-    config_path="./configs",
-    config_name="exp/ijepa_vitB_mini.yaml",
-)
+@hydra.main(version_base=None, config_path="./configs")
 def main(cfg: DictConfig):
 
     print("\n========== HYDRA CONFIG ==========")
