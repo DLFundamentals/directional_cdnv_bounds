@@ -4,9 +4,10 @@ from typing import Optional
 import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, DistributedSampler
-from torchvision import transforms
 
 from datasets import load_dataset
+
+from data_utils.augmentations_hub.registry import get_transforms
 
 
 @dataclass
@@ -14,6 +15,7 @@ class MiniImageNetCfg:
     name: str
     hf_repo: str
     hf_cache_dir: str
+    method: str = "dino"
     img_size: int = 224
     batch_size: int = 128
     num_workers: int = 8
@@ -40,40 +42,34 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         self.ds_train = None
         self.ds_test = None
 
-        # Global crop augmentation (for first 2 views in DINO)
-        self.global_crop_tf = transforms.Compose([
-            transforms.RandomResizedCrop(self.cfg.img_size, scale=(0.32, 1.0)),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomApply([
-                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
-            ], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.485, 0.456, 0.406),
-                                 std=(0.229, 0.224, 0.225)),
-        ])
-        
-        # Local crop augmentation (for remaining views in DINO)
-        self.local_crop_tf = transforms.Compose([
-            transforms.RandomResizedCrop(96, scale=(0.05, 0.32)),  # Smaller crops
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomApply([
-                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
-            ], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.485, 0.456, 0.406),
-                                 std=(0.229, 0.224, 0.225)),
-        ])
-        
-        # Test/validation transform (no augmentation)
-        self.test_tf = transforms.Compose([
-            transforms.Resize(self.cfg.img_size + 32),
-            transforms.CenterCrop(self.cfg.img_size),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.485, 0.456, 0.406),
-                                 std=(0.229, 0.224, 0.225)),
-        ])
+        self.train_tfms, self.basic_tfms = self._get_transforms(self.cfg.method, self.cfg.name)
+        self._init_view_transforms()
+
+    def _get_transforms(self, method: str, dataset_name: str):
+        """Method-aware transforms factory (mirrors data_utils/dataloaders.py)."""
+        return get_transforms(
+            method=method,
+            dataset="cifar" if "cifar" in (dataset_name or "").lower() else dataset_name,
+        )
+
+    def _init_view_transforms(self):
+        """Initialize per-view transforms.
+
+        - For DINO: use global/local crops if provided by the factory.
+        - Otherwise: use the single train transform for every view.
+        """
+
+        train = self.train_tfms
+        method = (self.cfg.method or "").lower()
+
+        if method in {"dinov2"} and hasattr(train, "global_transform") and hasattr(train, "local_transform"):
+            self.global_crop_tf = train.global_transform
+            self.local_crop_tf = train.local_transform
+        else:
+            self.global_crop_tf = train
+            self.local_crop_tf = train
+
+        self.test_tf = self.basic_tfms
 
     def prepare_data(self):
         # Download/cache the dataset. Lightning calls this only on rank 0.
@@ -82,7 +78,6 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         load_dataset(self.cfg.hf_repo, split=self.cfg.test_split, cache_dir=self.cfg.hf_cache_dir)
 
     def setup(self, stage: Optional[str] = None):
-        # Create datasets (cheap if cached)
         self.ds_train = load_dataset(
             self.cfg.hf_repo,
             split=self.cfg.train_split,
@@ -94,7 +89,6 @@ class MiniImageNetDataModule(pl.LightningDataModule):
             cache_dir=self.cfg.hf_cache_dir,
         )
 
-        # Tell HF to return torch tensors for label; keep image as PIL until transform
         self.ds_train.set_format(type="python")
         self.ds_test.set_format(type="python")
 
@@ -109,10 +103,17 @@ class MiniImageNetDataModule(pl.LightningDataModule):
         if train and self.cfg.num_views > 1:
             # Create multiple augmented views of each image
             views = []
+
+            method = (self.cfg.method or "").lower()
+            is_dino = method in {"dino", "dinov2"} and hasattr(self.train_tfms, "global_transform")
+
             for i in range(self.cfg.num_views):
-                # First 2 views: global crops (224x224)
-                # Remaining views: local crops (96x96)
-                tf = self.global_crop_tf if i < 2 else self.local_crop_tf
+                # DINO: first 2 views are global crops, remaining are local crops.
+                if is_dino:
+                    tf = self.global_crop_tf if i < 2 else self.local_crop_tf
+                else:
+                    tf = self.global_crop_tf
+
                 images = [tf(ex["image"].convert("RGB")) for ex in batch]
                 views.append(torch.stack(images, dim=0))
             return views, torch.tensor(labels, dtype=torch.long)
