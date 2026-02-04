@@ -1,0 +1,29 @@
+# @package _global_
+
+stage:
+  name: mae
+
+  # training objective
+  objective: mae
+
+  # MAE-specific knobs
+  mask_ratio: 0.75        # start conservative; JEPA papers go higher later
+  decoder_dim: 512
+  decoder_depth: 8
+  decoder_num_heads: 16
+  mlp_ratio: 4.0
+
+  # timm backbone name used to build vit
+  vit_name: vit_base_patch16_224
+
+  # optimizer basics (keep simple for now)
+  lr: 1.5e-4
+  weight_decay: 0.05
+  min_lr: 1.0e-6
+  warmup_epochs: 0
+
+  # checkpointing
+  save_teacher_only: true
+
+method:
+  name: mae
