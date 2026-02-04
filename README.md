@@ -121,6 +121,16 @@ Args:
 """
 ```
 
+# Training SSL models from scratch
+
+Our repository supports training following SSL methods from scratch using [Lightly-SSL](https://github.com/lightly-ai/lightly-ssl):
+- VICReg
+- SimCLR
+- MAE
+- DINOv2
+
+You can find the training scripts and necessary utilities in the [training_scratch](src/training_scratch) folder. Please refer to the [training_from_scratch.md](docs/training_from_scratch.md) document for detailed instructions on training these models from scratch.
+
 ## Citation
 If you find our work useful in your research, please consider citing the following paper:
 

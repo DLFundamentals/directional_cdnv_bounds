@@ -1,6 +1,6 @@
 # @package _global_
 
-exp_name: stage1_mae_mini_vitb16
+exp_name: mae_mini_vitb16
 
 defaults:
   - /base
@@ -12,13 +12,18 @@ defaults:
 
 probe:
   enabled: false
-  every_n_epochs: 1
+  every_n_epochs: 10
   max_epochs: 100            # probe training epochs (keep small)
   lr: 0.001
   weight_decay: 0.0
   max_train_batches: 200   # cap for speed (debug-friendly)
   max_val_batches: 50
   batch_size: 256
+
+cdnv:
+  enabled: true
+  every_n_epochs: 10
+  num_classes: 100
 
 viz:
   enabled: False

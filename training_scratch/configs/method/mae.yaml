@@ -1,7 +1,7 @@
 # @package _global_
 
 stage:
-  name: stage1_teacher_mae
+  name: mae
 
   # training objective
   objective: mae
@@ -27,11 +27,3 @@ stage:
 
 method:
   name: mae
-
-stage2:
-  enabled: true           # false for stage-1
-  ref_ckpt_path: /home/luthra/directional_cdnv_bounds/checkpoints/stage1_mae_mini_vitb16/checkpoints/stage1/epoch_0000.ckpt
-  anchor_weight: 0.0
-  keep_mae_loss: false       # POC: anchor only
-  lambda_dir: 1.0
-  min_class_count: 2
