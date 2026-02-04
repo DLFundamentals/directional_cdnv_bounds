@@ -2,3 +2,8 @@
 
 method:
   name: "dino"
+
+
+model:
+  mask_patch_size: 8
+  mask_ratio: 0.6
