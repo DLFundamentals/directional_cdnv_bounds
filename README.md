@@ -2,7 +2,7 @@
 
 This repository provides official PyTorch implementation of the preprint [Directional Neural Collapse in Self-Supervised Visual Representation Learning](https://github.com/DLFundamentals/directional_cdnv_bounds).
 
-Authors: Achleshwar Luthra*, Yash Salunkhe*, and Tomer Galanti. (* denotes equal contribution)
+Authors: Achleshwar Luthra*, Yash Salunkhe*, and Tomer Galanti*. (* denotes equal contribution)
 
 We acknowledge the public availability of the following repositories, which we have built upon in our work:
 
