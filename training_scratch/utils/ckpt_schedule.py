@@ -3,12 +3,21 @@ import pytorch_lightning as pl
 
 
 class ScheduledCheckpoint(pl.Callback):
-    def __init__(self, dirpath: str, early_every: int, early_until: int, late_every: int, save_last: bool = True):
+    def __init__(
+        self,
+        dirpath: str,
+        early_every: int,
+        early_until: int,
+        late_every: int,
+        save_last: bool = True,
+        save_on_start: bool = True,
+    ):
         self.dirpath = dirpath
         self.early_every = early_every
         self.early_until = early_until
         self.late_every = late_every
         self.save_last = save_last
+        self.save_on_start = save_on_start
 
     def _ensure_dir(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
         # Make dir on rank 0, then sync so others don't race
@@ -27,6 +36,8 @@ class ScheduledCheckpoint(pl.Callback):
             trainer.strategy.barrier()
 
     def on_fit_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
+        if not self.save_on_start:
+            return
         active_path = self._ensure_dir(trainer, pl_module)
         path = os.path.join(active_path, "epoch_0000.ckpt")
         self._save_all_ranks(trainer, path)

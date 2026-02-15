@@ -88,6 +88,8 @@ class LightlyVICReg(pl.LightningModule):
         z1 = self.forward(images_1)
 
         loss = self.criterion(z0, z1)
+
+        self.log("loss", loss, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
         
         self.log("train/vicreg_loss", loss, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
         return loss

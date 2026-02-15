@@ -1,8 +1,3 @@
-"""
-Run this scripts as:
-python train.py --config-path /abs/path/to/configs --config-name <config-file-name>
-"""
-
 import hydra
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
@@ -20,13 +15,19 @@ from models.vicreg import LightlyVICReg
 from models.dino import LightlyDINO
 from models.ijepa import LightlyIJepa
 from data.mini_imagenet_datamodule import MiniImageNetDataModule, MiniImageNetCfg
+from synthetic_exp.synthetic_dataloader import SyntheticShapesDataModule, SyntheticShapesCfg
 from utils.export_teacher import export_teacher_encoder_only
 from utils.ckpt_schedule import ScheduledCheckpoint
 from utils.linear_probe_callback import LinearProbeCallback
 from utils.cdnv_callback import CDNVCallback
 from utils.mae_recon_callback import MAEReconCallback
+from utils.wandb_curves_callback import WandbCurvesCallback
 
-@hydra.main(version_base=None, config_path="./configs")
+@hydra.main(
+    version_base=None,
+    config_path="./configs",
+    config_name="exp/dino_synthetic.yaml",
+)
 def main(cfg: DictConfig):
 
     print("\n========== HYDRA CONFIG ==========")
@@ -34,9 +35,21 @@ def main(cfg: DictConfig):
     print("=================================\n")
 
     # build data module
-    data_cfg = MiniImageNetCfg(**cfg.data)
-    data_cfg.method = cfg.method.name
-    data_module = MiniImageNetDataModule(data_cfg)
+    if cfg.data.name == "mini_imagenet":
+        data_cfg = MiniImageNetCfg(**cfg.data)
+        data_module = MiniImageNetDataModule(data_cfg)
+    elif cfg.data.name == "synthetic_shapes":
+        data_cfg = SyntheticShapesCfg(
+            data_root=cfg.data.get("data_root", "./synthetic_shapes"),
+            metadata_file=cfg.data.get("metadata_file", "metadata.json"),
+            img_size=cfg.data.img_size,
+            batch_size=cfg.data.batch_size,
+            num_workers=cfg.data.num_workers,
+            num_views=cfg.data.num_views,
+        )
+        data_module = SyntheticShapesDataModule(data_cfg)
+    else:
+        raise ValueError(f"Unknown dataset: {cfg.data.name}")
 
     # build model based on method
     if cfg.method.name.lower() == "mae":
@@ -48,7 +61,7 @@ def main(cfg: DictConfig):
     elif cfg.method.name.lower() == "ijepa":
         model = LightlyIJepa(cfg)
     else:
-        raise ValueError(f"Unknown method: {cfg.method.name}. Supported: 'mae', 'vicreg', 'dino'")
+        raise ValueError(f"Unknown method: {cfg.method.name}. Supported: 'mae', 'vicreg', 'dino', 'ijepa'")
 
     # custom model checkpointing & logging
     sched_cb = ScheduledCheckpoint(
@@ -57,6 +70,7 @@ def main(cfg: DictConfig):
         early_until=cfg.ckpt_schedule.early_until,
         late_every=cfg.ckpt_schedule.late_every,
         save_last=cfg.ckpt_schedule.save_last,
+        save_on_start=True,  # Add this line
     )
     # Instantiate logger only on rank 0 to avoid hangs when running under DDP.
     # Check several common environment variables that indicate rank.
@@ -92,7 +106,9 @@ def main(cfg: DictConfig):
     cdnv_cb = CDNVCallback(**cfg.cdnv)
     
     # reconstruction callback (only for MAE)
-    callbacks = [sched_cb, probe_cb, cdnv_cb]
+    wandb_curves_cb = WandbCurvesCallback()
+
+    callbacks = [sched_cb, probe_cb, cdnv_cb, wandb_curves_cb]
     if cfg.method.name.lower() == "mae" and cfg.viz.enabled:
         viz_cb = MAEReconCallback(**cfg.viz)
         callbacks.append(viz_cb)

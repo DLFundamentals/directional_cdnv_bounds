@@ -1,0 +1,31 @@
+# @package _global_
+
+exp_name: vitB_dino_synthetic_ep0
+
+defaults:
+  - /base
+  - /data: synthetic_shapes
+  - /model: vit_b
+  - /method: dino
+  - /trainer: single_gpu
+  - /trainer/checkpoint
+  - _self_
+
+dataset:
+  name: synthetic
+  path: /home/yashsalunkhe619/directional_cdnv_bounds/synthetic_shapes
+
+
+probe:
+  enabled: True
+  every_n_epochs: 50
+  max_epochs: 50
+  lr: 0.001
+  weight_decay: 0.0
+  max_train_batches: 50
+  max_val_batches: 20
+  batch_size: 256
+  run_before_training: True
+
+cdnv:
+  enabled: False

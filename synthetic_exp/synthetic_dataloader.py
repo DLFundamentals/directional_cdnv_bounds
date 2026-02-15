@@ -9,7 +9,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from synthetic_utils import LABEL_MAPS
+from .synthetic_utils import LABEL_MAPS
 
 
 @dataclass
@@ -44,7 +44,11 @@ class SyntheticShapesDataset(Dataset):
 		img_path = os.path.join(self.cfg.data_root, r["file"])
 		img = Image.open(img_path).convert("RGB")
 		label = self.label_map[r[self.cfg.label_key]]
-		return {"image": img, "label": label}
+		all_labels = {}
+		for k, m in LABEL_MAPS.items():
+			if k in r:
+				all_labels[k] = m[r[k]]
+		return {"image": img, "label": label, "labels": all_labels}
 
 
 class SyntheticShapesDataModule(pl.LightningDataModule):
@@ -117,8 +121,16 @@ class SyntheticShapesDataModule(pl.LightningDataModule):
 		self.ds_train = SyntheticShapesDataset(self.cfg, train_records)
 		self.ds_val = SyntheticShapesDataset(self.cfg, val_records)
 
-	def _collate(self, batch, train: bool):
-		labels = torch.tensor([ex["label"] for ex in batch], dtype=torch.long)
+	def _collate(self, batch, train: bool, return_all_labels: bool = False):
+		if return_all_labels:
+			labels: Dict[str, torch.Tensor] = {}
+			keys = set()
+			for ex in batch:
+				keys.update((ex.get("labels") or {}).keys())
+			for k in sorted(keys):
+				labels[k] = torch.tensor([int(ex["labels"][k]) for ex in batch], dtype=torch.long)
+		else:
+			labels = torch.tensor([ex["label"] for ex in batch], dtype=torch.long)
 		if train and self.cfg.num_views > 1:
 			views = []
 			for i in range(self.cfg.num_views):
@@ -136,6 +148,10 @@ class SyntheticShapesDataModule(pl.LightningDataModule):
 
 	def eval_collate(self, batch):
 		return self._collate(batch, train=False)
+
+	def probe_collate(self, batch):
+		# Return all labelings so the linear probe can report multiple accuracies.
+		return self._collate(batch, train=False, return_all_labels=True)
 
 	def train_dataloader(self):
 		kwargs = dict(
@@ -172,7 +188,7 @@ class SyntheticShapesDataModule(pl.LightningDataModule):
 			num_workers=self.cfg.num_workers,
 			pin_memory=True,
 			persistent_workers=self.cfg.num_workers > 0,
-			collate_fn=self.eval_collate,
+			collate_fn=self.probe_collate,
 		)
 		if self.cfg.num_workers > 0:
 			kwargs["prefetch_factor"] = 2

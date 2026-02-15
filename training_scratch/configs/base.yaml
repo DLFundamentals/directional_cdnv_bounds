@@ -10,7 +10,8 @@ logging:
   run_name: ${exp_name}
   tags: [ "vicreg"]
   log_model: false      # true if you want checkpoints uploaded
-  log_every_n_steps: 50
+  log_every_n_steps: 10
+  log_every_n_epochs: 1
 
 
 precision: bf16-mixed   # change to "16-mixed" if bf16 isn't supported

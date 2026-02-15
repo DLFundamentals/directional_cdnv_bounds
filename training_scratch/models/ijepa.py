@@ -94,6 +94,7 @@ class LightlyIJepa(pl.LightningModule):
             if hidden is None:
                 # As a last resort, compute a trivial zero loss to avoid crashes
                 loss = torch.tensor(0.0, device=self.device)
+                self.log("loss", loss, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
                 self.log("train/total_loss", loss, on_step=True, on_epoch=True, sync_dist=True)
                 return loss
             # Pool hidden to a scalar prediction per sample and compute MSE to mean pixel
@@ -101,6 +102,7 @@ class LightlyIJepa(pl.LightningModule):
             target = img.view(img.size(0), -1).mean(dim=1, keepdim=True)
             pred = pooled.mean(dim=1, keepdim=True)
             loss = torch.nn.functional.mse_loss(pred, target)
+            self.log("loss", loss, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
             self.log("train/total_loss", loss, on_step=True, on_epoch=True, sync_dist=True)
             return loss
 
@@ -112,10 +114,12 @@ class LightlyIJepa(pl.LightningModule):
             except Exception:
                 # fallback
                 loss = torch.nn.functional.mse_loss(pred.flatten(), img.flatten())
+                self.log("loss", loss, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
                 self.log("train/total_loss", loss, on_step=True, on_epoch=True, sync_dist=True)
                 return loss
 
         loss = torch.nn.functional.mse_loss(pred, img)
+        self.log("loss", loss, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
         self.log("train/total_loss", loss, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 

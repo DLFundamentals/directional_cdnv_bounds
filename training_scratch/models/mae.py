@@ -154,9 +154,11 @@ class LightlyMAE(pl.LightningModule):
             total = self.cfg.stage2.anchor_weight * loss_anchor + self.cfg.stage2.lambda_dir * loss_dir_cdnv
             if self.cfg.stage2.keep_mae_loss and loss_mae is not None:
                 total = total + loss_mae
+            self.log("loss", total, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
             self.log("stage2/total_loss", total, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
             return total
         else:
+            self.log("loss", loss_mae, prog_bar=False, on_step=False, on_epoch=True, sync_dist=True)
             return loss_mae
 
 

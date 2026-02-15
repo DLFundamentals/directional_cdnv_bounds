@@ -1,0 +1,8 @@
+name: synthetic_shapes
+# root folder containing PNGs and metadata.json
+data_root: ${oc.env:SYNSHAPES_ROOT,./synthetic_shapes}
+metadata_file: metadata.json
+img_size: 64
+batch_size: 512
+num_workers: 8
+num_views: 6  # 2 global + 4 local for DINO

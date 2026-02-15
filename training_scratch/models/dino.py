@@ -253,6 +253,16 @@ class LightlyDINO(pl.LightningModule):
 
         loss = dino_loss + ibot_loss + koleo_loss
 
+        # Unified loss key for consistent W&B curves.
+        self.log(
+            "loss",
+            loss,
+            prog_bar=False,
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True,
+        )
+
         # Log losses
         self.log(
             "train/dino_loss",

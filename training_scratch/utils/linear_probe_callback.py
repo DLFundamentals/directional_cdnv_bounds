@@ -25,6 +25,11 @@ class LinearProbeCallback(pl.Callback):
         self.enabled = enabled
         self.run_before_training = run_before_training
 
+        # Cached results so other callbacks (e.g. W&B curves) can reuse them.
+        # - For single-label datasets: {'primary': float}
+        # - For multi-label datasets: {'shape': float, 'color': float, ...}
+        self.last_val_acc = {}
+
     @staticmethod
     def _cls_features(backbone, images):
         # Support both ViT and ResNet-style backbones.
@@ -87,19 +92,9 @@ class LinearProbeCallback(pl.Callback):
             val_loader = dm.probe_test_dataloader() if hasattr(dm, "probe_test_dataloader") else dm.val_dataloader()
             device = pl_module.device
 
-            # num classes
-            num_classes = getattr(dm, "num_classes", None) or getattr(dm, "n_classes", None)
-            if num_classes is None:
-                ds = getattr(dm, "ds_train", None) or getattr(dm, "train_set", None)
-                if ds is not None and hasattr(ds, "features") and "label" in ds.features:
-                    try:
-                        num_classes = int(ds.features["label"].num_classes)
-                    except Exception:
-                        pass
-            if num_classes is None:
-                # last resort: infer from a batch
-                _, y0 = next(iter(train_loader))
-                num_classes = int(y0.max().item() + 1)
+            # Determine whether the dataloader yields a single label tensor or a dict of label tensors.
+            _, y0 = next(iter(train_loader))
+            multi_label = isinstance(y0, dict)
 
             backbone = pl_module.backbone  # frozen for probe
 
@@ -114,47 +109,75 @@ class LinearProbeCallback(pl.Callback):
             Xtr, Ytr = self.extract_features(train_loader, backbone, device, max_batches=self.max_train_batches)
             Xva, Yva = self.extract_features(val_loader, backbone, device, max_batches=self.max_val_batches)
 
-            train_dl = DataLoader(TensorDataset(Xtr, Ytr), batch_size=self.batch_size, shuffle=True, num_workers=0)
-            val_dl = DataLoader(TensorDataset(Xva, Yva), batch_size=self.batch_size, shuffle=False, num_workers=0)
+            def run_one_probe(ytr: torch.Tensor, yva: torch.Tensor, key: str):
+                # infer classes for this labeling
+                num_classes = int(ytr.max().item() + 1)
 
-            clf = nn.Linear(feat_dim, num_classes).to(device)
-            opt = torch.optim.AdamW(clf.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+                train_dl = DataLoader(TensorDataset(Xtr, ytr), batch_size=self.batch_size, shuffle=True, num_workers=0)
+                val_dl = DataLoader(TensorDataset(Xva, yva), batch_size=self.batch_size, shuffle=False, num_workers=0)
 
-            def run_epoch_cached(dl, train=True):
-                correct, total = 0, 0
-                loss_sum = 0.0
-                clf.train() if train else clf.eval()
+                clf = nn.Linear(feat_dim, num_classes).to(device)
+                opt = torch.optim.AdamW(clf.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
-                for X, y in dl:
-                    X = X.to(device, non_blocking=True)
-                    y = y.to(device, non_blocking=True)
+                def run_epoch_cached(dl, train=True):
+                    correct, total = 0, 0
+                    loss_sum = 0.0
+                    clf.train() if train else clf.eval()
 
-                    logits = clf(X)
-                    loss = F.cross_entropy(logits, y)  # mean over batch
+                    for X, y in dl:
+                        X = X.to(device, non_blocking=True)
+                        y = y.to(device, non_blocking=True)
 
-                    if train:
-                        opt.zero_grad(set_to_none=True)
-                        loss.backward()
-                        opt.step()
+                        logits = clf(X)
+                        loss = F.cross_entropy(logits, y)  # mean over batch
 
-                    bs = y.size(0)
-                    correct += (logits.argmax(dim=1) == y).sum().item()
-                    total += bs
-                    loss_sum += loss.item() * bs  # sample-weighted
+                        if train:
+                            opt.zero_grad(set_to_none=True)
+                            loss.backward()
+                            opt.step()
 
-                return correct / max(total, 1), loss_sum / max(total, 1)
+                        bs = y.size(0)
+                        correct += (logits.argmax(dim=1) == y).sum().item()
+                        total += bs
+                        loss_sum += loss.item() * bs  # sample-weighted
 
-            for _ in range(self.max_epochs):
-                train_acc, train_loss = run_epoch_cached(train_dl, train=True)
+                    return correct / max(total, 1), loss_sum / max(total, 1)
 
-            val_acc, val_loss = run_epoch_cached(val_dl, train=False)
+                for _ in range(self.max_epochs):
+                    train_acc, train_loss = run_epoch_cached(train_dl, train=True)
 
-            pl_module.log("probe/train_acc", train_acc, on_step=False, on_epoch=True, sync_dist=False)
-            pl_module.log("probe/train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=False)
-            pl_module.log("probe/val_acc", val_acc, on_step=False, on_epoch=True, sync_dist=False)
-            pl_module.log("probe/val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=False)
+                val_acc, val_loss = run_epoch_cached(val_dl, train=False)
 
-            trainer.print(f"[LinearProbe] epoch={epoch_to_log} train_acc={train_acc:.4f} val_acc={val_acc:.4f}")
+                # Keep existing single-label keys for backwards compatibility,
+                # but also emit per-labelling keys for synthetic multi-label probes.
+                if key == "primary":
+                    pl_module.log("probe/train_acc", train_acc, on_step=False, on_epoch=True, sync_dist=False)
+                    pl_module.log("probe/train_loss", train_loss, on_step=False, on_epoch=True, sync_dist=False)
+                    pl_module.log("probe/val_acc", val_acc, on_step=False, on_epoch=True, sync_dist=False)
+                    pl_module.log("probe/val_loss", val_loss, on_step=False, on_epoch=True, sync_dist=False)
+                else:
+                    pl_module.log(f"probe/train_acc/{key}", train_acc, on_step=False, on_epoch=True, sync_dist=False)
+                    pl_module.log(f"probe/train_loss/{key}", train_loss, on_step=False, on_epoch=True, sync_dist=False)
+                    pl_module.log(f"probe/val_acc/{key}", val_acc, on_step=False, on_epoch=True, sync_dist=False)
+                    pl_module.log(f"probe/val_loss/{key}", val_loss, on_step=False, on_epoch=True, sync_dist=False)
+
+                # Cache for W&B curves.
+                self.last_val_acc[key if key != "primary" else "primary"] = float(val_acc)
+
+                return train_acc, val_acc
+
+            if multi_label:
+                # Dict[str, Tensor]
+                acc_pairs = []
+                for key in sorted(Ytr.keys()):
+                    acc_pairs.append((key, *run_one_probe(Ytr[key], Yva[key], key=key)))
+
+                msg = ", ".join([f"{k}: {va:.4f}" for k, _, va in acc_pairs])
+                trainer.print(f"[LinearProbe] epoch={epoch_to_log} val_acc=({msg})")
+            else:
+                # Tensor
+                train_acc, val_acc = run_one_probe(Ytr, Yva, key="primary")
+                trainer.print(f"[LinearProbe] epoch={epoch_to_log} train_acc={train_acc:.4f} val_acc={val_acc:.4f}")
 
         finally:
             # restore the exact previous mode
@@ -166,7 +189,9 @@ class LinearProbeCallback(pl.Callback):
 
 
     def extract_features(self, loader, backbone, device, max_batches=999999):
-        feats_list, y_list = [], []
+        feats_list = []
+        y_list = []
+        y_dict = {}
 
         for batch_idx, (views, y) in enumerate(loader):
             if batch_idx >= max_batches:
@@ -178,6 +203,15 @@ class LinearProbeCallback(pl.Callback):
                 feats = F.normalize(feats, dim=1)
 
             feats_list.append(feats.cpu())
-            y_list.append(y.cpu())
+            if isinstance(y, dict):
+                for k, v in y.items():
+                    y_dict.setdefault(k, []).append(v.cpu())
+            else:
+                y_list.append(y.cpu())
 
-        return torch.cat(feats_list, dim=0), torch.cat(y_list, dim=0)
+        X = torch.cat(feats_list, dim=0)
+        if y_dict:
+            Y = {k: torch.cat(vs, dim=0) for k, vs in y_dict.items()}
+        else:
+            Y = torch.cat(y_list, dim=0)
+        return X, Y

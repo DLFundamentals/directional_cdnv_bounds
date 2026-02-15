@@ -93,11 +93,8 @@ class CDNVCallback(pl. Callback):
             return
 
         epoch = trainer.current_epoch + 1
-        if epoch <= 100:
-            if epoch % 10 != 0:
-                return
-        else:
-            if epoch % 100 != 0:
+        if self.every_n_epochs is not None and int(self.every_n_epochs) > 0:
+            if epoch % int(self.every_n_epochs) != 0:
                 return
 
         dm = trainer.datamodule
@@ -128,7 +125,9 @@ class CDNVCallback(pl. Callback):
                 )
 
             if self.compute_on_train:
-                train_loader = dm.probe_train_dataloader() if hasattr(dm, "probe_train_dataloader") else dm.train_dataloader()
+                # Use the standard training loader so labels are a single Tensor.
+                # (Synthetic probe loaders may return a dict of multiple labelings.)
+                train_loader = dm.train_dataloader()
                 Xtr, Ytr = self.extract_features(
                     train_loader, backbone, device, max_batches=self.max_train_batches
                 )
@@ -157,7 +156,7 @@ class CDNVCallback(pl. Callback):
                     pl_module.print(f"[CDNV] epoch={epoch} train_dir_cdnv={train_dir_cdnv:.6f}")
 
             if self.compute_on_val:
-                val_loader = dm.probe_test_dataloader() if hasattr(dm, "probe_test_dataloader") else dm.val_dataloader()
+                val_loader = dm.val_dataloader()
                 Xva, Yva = self.extract_features(
                     val_loader, backbone, device, max_batches=self.max_val_batches
                 )
