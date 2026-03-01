@@ -136,6 +136,15 @@ Our repository supports training following SSL methods from scratch using [Light
 
 You can find the training scripts and necessary utilities in the [training_scratch](src/training_scratch) folder. Please refer to the [training_from_scratch.md](docs/training_from_scratch.md) document for detailed instructions on training these models from scratch.
 
+# Multiaxis Orthogonality 
+
+We show that as SSL training progresses, decision axes corresponding to different independent semantic labelings (e.g., color, shape, size, style of an object) become nearly orthogonal in feature space. \
+**Proposition 4.2** (Near-orthogonality from small directional CDNV). Assume $y^{(1)}, y^{(2)} \in \lbrace \pm 1 \rbrace$ are balanced and independent, and $d_1, d_2 > 0$. Then
+
+$$|u_1^\top u_2| \leq \min\left(\frac{2d_1}{d_2}\sqrt{\tilde{V}^{(1)}},\ \frac{2d_2}{d_1}\sqrt{\tilde{V}^{(2)}}\right)$$
+
+where $u_\ell$ is the unit decision axis for task $\ell$, $d_\ell$ is the mean gap between classes, and $\tilde{V}^{(\ell)}$ is the directional CDNV for task $\ell$. Intuitively, when within-class variance is small along each task's decision axis (i.e., $\tilde{V}^{(1)}, \tilde{V}^{(2)} \ll 1$) and the mean gaps are comparable ($d_1 \asymp d_2$), the bound forces $|u_1^\top u_2| \ll 1$, meaning the two decision axes are nearly orthogonal.
+
 ## Citation
 If you find our work useful in your research, please consider citing the following paper:
 
