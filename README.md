@@ -37,6 +37,11 @@ To verify the above bound for different values of $m$ and $C$, we provide the fo
 
 > Old bound is computed in the [error_bounds.ipynb](notebooks/error_bounds.ipynb) notebook using the [old_bound_core.py](bound_analysis/old_bound_core.py) script.
 
+#### Our Contribution (New Bound) - 
+Let $C' \geq 2$ and $m \geq 10$ be integers. Fix a feature map $f : \mathcal{X} \to \mathbb{R}^d$ and class-conditional distributions $D_1, \ldots, D_{C'}$ over $\mathcal{X}$. Then the average multiclass error of the NCC classifier satisfies
+
+$$\text{err}_{m,c}^{\text{NCC}}(f) \leq \frac{1}{C'} \sum_{i=1}^{C'} \sum_{j \neq i} \frac{4\,\tilde{V}_{ij}}{\left(1 + \frac{v_j - v_i}{m\,d_{ij}^2}\right)^2} + \frac{1}{C'} \sum_{i=1}^{C'} \sum_{j \neq i} \frac{\left(\sqrt{E^1_{ij}} + \sqrt{E^2_{ij}} + \sqrt{E^3_{ij}}\right)^2}{\left(1 + \frac{v_j - v_i}{m\,d_{ij}^2}\right)^2}$$
+
 ### NCCC evaluation
 
 ```python
