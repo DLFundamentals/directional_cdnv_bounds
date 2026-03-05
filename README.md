@@ -148,5 +148,10 @@ where $u_\ell$ is the unit decision axis for task $\ell$, $d_\ell$ is the mean g
 If you find our work useful in your research, please consider citing the following paper:
 
 ```bibtex
-TODO
+      @misc{2026directionalcollapse,
+          title={Directional Neural Collapse Explains Few-Shot Transfer in Self-Supervised Learning}, 
+          author={Achleshwar Luthra* and Yash Salunkhe* and Tomer Galanti*},
+          year={2026},
+          publisher={ArXiv},
+      }
 ```
