@@ -1,4 +1,4 @@
-# Directional Neural Collapse in Self-Supervised Visual Representation Learning
+# Directional Neural Collapse Explains Few-Shot Transfer in Self-Supervised Learning
 [Project Page](https://dlfundamentals.github.io/directional-neural-collapse/) | [Paper](https://arxiv.org/pdf/2603.03530)
 
 Authors: Achleshwar Luthra*, Yash Salunkhe*, and Tomer Galanti*. (* denotes equal contribution)
