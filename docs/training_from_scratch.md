@@ -1,6 +1,6 @@
 # Training SSL models from scratch
 
-Our repository supports training following SSL methods from scratch using [Lightly-SSL](https://github.com/lightly-ai/lightly-ssl):
+Our repository supports training the following SSL methods (from scratch) using [Lightly-SSL](https://github.com/lightly-ai/lightly-ssl):
 - VICReg
 - SimCLR
 - MAE
