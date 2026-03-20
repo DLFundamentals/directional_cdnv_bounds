@@ -1,0 +1,15 @@
+# @package _global_
+
+model:
+  resnet_name: "resnet50"
+  pretrained: false
+  
+  hidden_dim: 2048  
+  output_dim: 2048
+  num_layers: 2
+  
+  # Optimizer parameters
+  lr: 0.0005          # Base learning rate (will be scaled)
+  weight_decay: 0.05
+  warmup_epochs: 10
+  min_lr: 0.0         # Minimum LR after cosine decay
