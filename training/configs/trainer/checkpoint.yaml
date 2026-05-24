@@ -1,0 +1,15 @@
+# @package _global_
+
+checkpoint:
+  monitor: train/loss
+  mode: min
+  save_last: true
+  save_top_k: 1
+  filename: "stage1-{epoch:02d}-{step:06d}-{train_loss:.4f}"
+
+ckpt_schedule:
+  dirpath: ${paths.exp_dir}/checkpoints
+  early_every: 10     # save every 10 epochs...
+  early_until: 100    # ...up to epoch 100 (inclusive)
+  late_every: 100     # then save every 100 epochs afterwards
+  save_last: true

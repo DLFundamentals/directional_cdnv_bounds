@@ -1,0 +1,17 @@
+# @package _global_
+
+model:
+  vit_model_name: "vit_base_patch16_224"
+  pretrained: false
+  ibot_separate_head: false
+  drop_path_rate: 0.1
+  
+  # Masking parameters for iBOT loss
+  mask_patch_size: 8
+  mask_ratio: 0.6
+  
+  # Optimizer parameters
+  lr: 0.001           # Base learning rate (will be scaled by batch size & world size)
+  weight_decay: 0.04
+  warmup_epochs: 10
+  min_lr: 0.00001     # Minimum LR after cosine decay

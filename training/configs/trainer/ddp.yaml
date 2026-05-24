@@ -1,0 +1,11 @@
+# ddp.yaml
+devices: 2             # 2 GPUs for distributed training
+accelerator: gpu
+strategy: ddp_find_unused_parameters_true
+max_epochs: 1001
+accumulate_grad_batches: 1
+use_distributed_sampler: true
+
+# quality-of-life
+num_sanity_val_steps: 0
+log_every_n_steps: 50

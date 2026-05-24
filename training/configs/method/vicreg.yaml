@@ -1,0 +1,10 @@
+# @package _global_
+
+method:
+  name: "vicreg"
+    
+model: 
+  # VICReg loss coefficients (from original paper)
+  lambda_param: 25.0  # Invariance loss weight
+  mu_param: 25.0      # Variance loss weight
+  nu_param: 1.0       # Covariance loss weight
